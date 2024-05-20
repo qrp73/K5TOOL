@@ -26,7 +26,7 @@ In order to get shortened command on Linux/MacOS you can create text file ```k5t
 #!/bin/bash
 mono ./K5TOOL.exe "$@"
 ```
-and make it executable with ```chmod +x k5tool
+and make it executable with ```chmod +x k5tool```
 
 After that you can run it as Linux command k5tool.
 
