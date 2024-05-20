@@ -33,9 +33,12 @@ After that you can run it as Linux command k5tool.
 
 ## Logging
 
-The tool write detailed communication log with all error details. You can read log file in K5TOOL.log.
+The tool writes detailed communication log with all error details. You can read log file in K5TOOL.log.
+
 ```rx``` and ```tx``` tags shows raw communication with radio.
+
 ```RX``` and ```TX``` tags shows decrypted messages.
+
 ```recv``` and ```send``` tags shows parsed protocol messages
 
 In case of any error you can find all communication and detailed error info in the log.
