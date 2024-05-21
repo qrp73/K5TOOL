@@ -6,10 +6,19 @@ I created this tool to get more robust protocol with logging to work with UV-K5 
 This tool allows to read/write EEPROM and write flash images.
 It also include pack/unpack commands and support both formats (encrypted/plain) of firmware images.
 
+## Install
+
+Just download zip file and unzip it: https://github.com/qrp73/K5TOOL/releases
+
+On Linux/MacOS it may neet to set execute permission for k5tool script:
+```sudo chmod +x k5tool```
+
+On Windows you can run it from console as usual K5TOOL.exe.
+
+
 ## Dependencies
 
-Since it is written in C#, it requires mono runtime. 
-On Windows it is available out of the box.
+The tool requires mono runtime. On Windows it is available out of the box.
 
 On Linux you can install it with:
 ```
