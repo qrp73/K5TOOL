@@ -10,7 +10,7 @@ It also include pack/unpack commands and support both formats (encrypted/plain) 
 
 Just download zip file and unzip it: https://github.com/qrp73/K5TOOL/releases
 
-On Linux/MacOS it may neet to set execute permission for k5tool script:
+On Linux/MacOS it may need to set execute permission for k5tool script:
 ```sudo chmod +x k5tool```
 
 On Windows you can run it from console as usual K5TOOL.exe.
