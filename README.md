@@ -259,8 +259,9 @@ Done
 ## UV-K5 bootloader simulator
 
 ```
-$ ./k5tool -simula
+$ ./k5tool -port /dev/ttyUSB1 -simula
 ```
 
 Simulate device bootloader, can be used for testing and analyze firmware updaters.
-Ignore crc warnings in this mode, because crc checks are implemented for updater endpoint.
+Where ```/dev/ttyUSB1``` is a name of serial port which is used for UV-K5 device simulation.
+
