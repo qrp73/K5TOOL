@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+mono "$(dirname ${BASH_SOURCE[0]:-$0})"/K5TOOL.exe "$@"
