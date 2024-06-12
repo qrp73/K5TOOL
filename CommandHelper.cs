@@ -271,7 +271,8 @@ namespace K5TOOL
             if (offsetFinal > FirmwareConstraints.MaxFlashAddr+1)
                 throw new InvalidOperationException(
                     string.Format(
-                        "DANGEROUS FLASH ADDRESS WRITE! offsetFinal=0x{0:x4}",
+                        "DANGEROUS FLASH ADDRESS WRITE! size=0x{0:x4}, offsetFinal=0x{1:x4}",
+                        data.Length,
                         offsetFinal));
 
             return ProcessAddressSpace(0x0000, data.Length, 0x100, FirmwareConstraints.MinFlashAddr, FirmwareConstraints.MaxFlashAddr, MaxFlashBlock,
