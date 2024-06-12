@@ -22,7 +22,8 @@ using System.Text;
 
 namespace K5TOOL.Packets
 {
-    // 30051000322e30312e3333000000000000000000
+    // original: 30051000322e30312e3333000000000000000000
+    // uvmod:    300510002a45475a554d45522076302e31390000
     public class PacketFlashVersionReq : Packet
     {
         public const ushort ID = 0x0530;
@@ -47,7 +48,7 @@ namespace K5TOOL.Packets
         // 0x30, 0x5, 0x10, 0x0, 0x32, 0x2e, 0x30, 0x31, 0x2e, 0x32, 0x33, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
         private static byte[] MakePacketBuffer(string versionString)
         {
-            if (versionString.Length > 15)
+            if (versionString.Length > 16)
                 throw new ArgumentOutOfRangeException("versionString");
             var data = Encoding.ASCII.GetBytes(versionString);
             var hdrSize = 16;
@@ -80,30 +81,16 @@ namespace K5TOOL.Packets
             }
         }
 
-        public uint Unknown0
-        {
-            get { return (uint)(_rawData[12] | (_rawData[13] << 8) | (_rawData[14] << 16) | (_rawData[15] << 24)); }
-        }
-
-        public uint Unknown1
-        {
-            get { return (uint)(_rawData[16] | (_rawData[17] << 8) | (_rawData[18] << 16) | (_rawData[19] << 24)); }
-        }
-
         public override string ToString()
         {
             return string.Format(
                 "{0} {{\n" +
                 "  HdrSize={1}\n" +
                 "  Version={2}\n" +
-                "  Unknown0={3}\n" +
-                "  Unknown1={4}\n" +
                 "}}",
                 this.GetType().Name,
                 HdrSize,
-                Version,
-                Unknown0,
-                Unknown1);
+                Version);
         }
     }
 }
