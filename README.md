@@ -263,3 +263,4 @@ $ ./k5tool -simula
 ```
 
 Simulate device bootloader, can be used for testing and analyze firmware updaters.
+Ignore crc warnings in this mode, because crc checks are implemented for updater endpoint.
