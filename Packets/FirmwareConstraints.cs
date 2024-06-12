@@ -5,6 +5,6 @@
         public static int MinEepromAddr = 0x0000;
         public static int MaxEepromAddr = 0x2000-1;
         public static int MinFlashAddr  = 0x0000;
-        public static int MaxFlashAddr  = 0xec00-1; // tested with egzumer/uv-k5-firmware-custom (uses 0xec00)
+        public static int MaxFlashAddr  = 0xf000-1; // tested with egzumer/1o11_fagci_spectrum_v0.6_packed.bin (size=0xeff4, offsetFinal=0xf000)
     }
 }
