@@ -96,10 +96,14 @@ namespace K5TOOL.Packets
                 "{0} {{\n" +
                 "  HdrSize={1}\n" +
                 "  Version={2}\n" +
+                "  Unknown0={3}\n" +
+                "  Unknown1={4}\n" +
                 "}}",
                 this.GetType().Name,
                 HdrSize,
-                Version);
+                Version,
+                Unknown0,
+                Unknown1);
         }
     }
 }
