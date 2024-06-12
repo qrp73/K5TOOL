@@ -66,6 +66,7 @@
     <Compile Include="Packets\PacketReadRssiReq.cs" />
     <Compile Include="Packets\PacketReadRssiAck.cs" />
     <Compile Include="Packets\PacketHelloTestReq.cs" />
+    <Compile Include="Packets\FirmwareConstraints.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Packets\" />

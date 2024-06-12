@@ -110,11 +110,7 @@ namespace K5TOOL
             return true;
         }
 
-        private const int MinEepromAddr = 0x0000;
-        private const int MaxEepromAddr = 0x1fff;
         private const int MaxEepromBlock = 0xff;
-        private const int MinFlashAddr = 0x0000;
-        private const int MaxFlashAddr = 0xe600;
         private const int MaxFlashBlock = 0x100;
 
         private static bool ProcessAddressSpace(
@@ -162,7 +158,7 @@ namespace K5TOOL
 
         public static bool ReadEeprom(Device device, int offset, int length, Action<int, byte[]> callback)
         {
-            return ProcessAddressSpace(offset, length, 0x80, MinEepromAddr, MaxEepromAddr, MaxEepromBlock,
+            return ProcessAddressSpace(offset, length, 0x80, FirmwareConstraints.MinEepromAddr, FirmwareConstraints.MaxEepromAddr, MaxEepromBlock,
                 (absOffset, blockOffset, blockLength) => {
                     Console.Write("   Read {0:x4}...{1:x4}: ", absOffset, absOffset + blockLength);
                     device.Send(new PacketReadEepromReq((ushort)absOffset, (byte)blockLength));
@@ -200,7 +196,7 @@ namespace K5TOOL
 
         public static bool WriteEeprom(Device device, int offset, byte[] data)
         {
-            return ProcessAddressSpace(offset, data.Length, 0x80, MinEepromAddr, MaxEepromAddr, MaxEepromBlock,
+            return ProcessAddressSpace(offset, data.Length, 0x80, FirmwareConstraints.MinEepromAddr, FirmwareConstraints.MaxEepromAddr, MaxEepromBlock,
                 (absOffset, blockOffset, blockLength) => {
                 Console.Write("   Write {0:x4}...{1:x4}: ", absOffset, absOffset + blockLength);
                 var subData = new byte[blockLength];
@@ -272,10 +268,13 @@ namespace K5TOOL
             ushort offsetFinal = (ushort)data.Length;
             if ((offsetFinal & 0xff) != 0)
                 offsetFinal = (ushort)((offsetFinal + 0x100) & 0xff00);
-            if (offsetFinal > 0xe600)
-                throw new InvalidOperationException("WARNING: DANGEROUS FLASH IMAGE SIZE");
+            if (offsetFinal > FirmwareConstraints.MaxFlashAddr+1)
+                throw new InvalidOperationException(
+                    string.Format(
+                        "DANGEROUS FLASH ADDRESS WRITE! offsetFinal=0x{0:x4}",
+                        offsetFinal));
 
-            return ProcessAddressSpace(0x0000, data.Length, 0x100, MinFlashAddr, MaxFlashAddr, MaxFlashBlock,
+            return ProcessAddressSpace(0x0000, data.Length, 0x100, FirmwareConstraints.MinFlashAddr, FirmwareConstraints.MaxFlashAddr, MaxFlashBlock,
                 (absOffset, blockOffset, blockLength) => {
                 Console.Write("   Write {0:x4}...{1:x4}: ", absOffset, absOffset + blockLength);
                 var subData = new byte[blockLength];

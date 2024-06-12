@@ -43,8 +43,12 @@ namespace K5TOOL.Packets
         {
             if (offsetFinal < offset+0x100)
                 throw new ArgumentOutOfRangeException("offsetFinal");
-            if (offset + 0x100 > 0xe600 || offsetFinal > 0xe600)
-                throw new InvalidOperationException("DANGEROUS FLASH ADDRESS WRITE!");
+            if (offset + 0x100 > FirmwareConstraints.MaxFlashAddr+1 || offsetFinal > FirmwareConstraints.MaxFlashAddr+1)
+                throw new InvalidOperationException(
+                    string.Format(
+                        "DANGEROUS FLASH ADDRESS WRITE! offset=0x{0:x4}, offsetFinal=0x{1:x4}",
+                        offset + 0x100,
+                        offsetFinal));
         }
 
         // 0x19, 0x5, 0xc, 0x1, 0x8a, 0x8d, 0x9f, 0x1d, address_msb, address_lsb, address_final_msb, address_final_lsb, length_msb, length_lsb, 0x0, 0x0, ...data
