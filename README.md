@@ -6,6 +6,11 @@ I created this tool to get more robust protocol with logging to work with UV-K5 
 This tool allows to read/write EEPROM and write flash images.
 It also include pack/unpack commands and support both formats (encrypted/plain) of firmware images.
 
+The tool supports firmware size up to 0xf000 (61440) bytes and tested on large firmwares.
+
+Also the tool can be used as software simulator of UV-K5 bootloader for testing firmware updater software.
+
+
 ## Install
 
 Just download zip file and unzip it: https://github.com/qrp73/K5TOOL/releases
