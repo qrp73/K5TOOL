@@ -255,3 +255,11 @@ $ ./k5tool -pack 2.01.32 RT590.raw RT590-encoded.bin
 Write RT590-encoded.bin...
 Done
 ```
+
+## UV-K5 bootloader simulator
+
+```
+$ ./k5tool -simula
+```
+
+Simulate device bootloader, can be used for testing and analyze firmware updaters.
