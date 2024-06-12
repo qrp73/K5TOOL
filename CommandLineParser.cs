@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace K5TOOL
 {
@@ -60,6 +61,7 @@ namespace K5TOOL
                 Console.WriteLine("ERROR: unknown command {0}", command);
             }
             // Print Usage
+            Console.WriteLine("K5TOOL v{0}", GetVersionString());
             Console.WriteLine("UV-K5 radio toolkit (c)2024 qrp73");
             Console.WriteLine();
             Console.WriteLine("USGAGE: k5tool [-port <portName>] <command> [<args>]");
@@ -71,6 +73,11 @@ namespace K5TOOL
                     Console.WriteLine("      {0}", _descs[cmd]);
             }
             return -1;
+        }
+
+        private static string GetVersionString()
+        {
+            return Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
     }
 }
