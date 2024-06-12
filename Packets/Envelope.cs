@@ -23,6 +23,8 @@ namespace K5TOOL.Packets
 {
     public class Envelope
     {
+        public static bool IsRadioEndpoint;
+
         private readonly byte[] _rawData;
 
         public Envelope(byte[] rawData)
@@ -54,6 +56,49 @@ namespace K5TOOL.Packets
             return packet;
         }
 
+        private static ushort GetCrc(byte[] data, int offset, int length)
+        {
+            if (IsRadioEndpoint)
+            {
+                // TODO:
+                //if (IsBootloader)
+                //    return 0xffff;
+                var crc0 = _xorTable[(length + 0) % 16] ^ 0xFF;
+                var crc1 = _xorTable[(length + 1) % 16] ^ 0xFF;
+                return (ushort)(crc0 | (crc1 << 8));
+            }
+            else
+            {
+                return Utils.Crc16(data, offset, length, 0);
+            }
+        }
+
+        private static void CheckCrc(int valid_crc, byte[] decoded, int offset, int length)
+        {
+            ushort crc;
+            if (IsRadioEndpoint)
+            {
+                crc = Utils.Crc16(decoded, offset, length, 0);
+            }
+            else
+            {
+                var crc0 = _xorTable[(length + 0) % 16] ^ 0xFF;
+                var crc1 = _xorTable[(length + 1) % 16] ^ 0xFF;
+                crc = (ushort)(crc0 | (crc1 << 8));
+
+                // TODO:
+                // 0xffff - running mode (!IsBootloader)
+                if (valid_crc == 0xffff)
+                {
+                    crc = 0xffff;
+                }
+            }
+            if (valid_crc != crc)
+            {
+                Console.WriteLine("WARN: Decode: crc=0x{0:x4}, expected=0x{1:x4}", crc, valid_crc);
+            }
+        }
+
         private static byte[] Encode(byte[] data)
         {
             if (data.Length > 0xffff)
@@ -67,7 +112,7 @@ namespace K5TOOL.Packets
             encoded[2] = (byte)data.Length;
             encoded[3] = (byte)(data.Length >> 8);
             Array.Copy(data, 0, encoded, 4, data.Length);
-            var crc = Utils.Crc16(encoded, 4, data.Length, 0);
+            var crc = GetCrc(data, 0, data.Length);
             encoded[4 + data.Length] = (byte)crc;
             encoded[5 + data.Length] = (byte)(crc >> 8);
             XorEncrypt(encoded, 4, data.Length + 2);
@@ -97,18 +142,7 @@ namespace K5TOOL.Packets
             Array.Copy(data, 4, decoded, 0, size + 2);
             XorEncrypt(decoded, 0, decoded.Length);
             var dec_crc = decoded[size] | (decoded[size + 1] << 8);
-
-            //var crc = Utils.Crc16(decoded, 0, len, 0);
-            var crc0 = _xorTable[(size + 0) % 16] ^ 0xFF;
-            var crc1 = _xorTable[(size + 1) % 16] ^ 0xFF;
-            var crc = crc0 | (crc1 << 8);
-            //Console.WriteLine("size={0:x4}({1}) dec_crc={2:x4} crc={3:x4}", size, size % 16, dec_crc, crc);
-
-            // 0xffff - running mode
-            if (dec_crc != 0xffff && dec_crc != crc)
-            {
-                Console.WriteLine("WARN: Decode: crc=0x{0:x4}, expected=0x{1:x4}", crc, dec_crc);
-            }
+            CheckCrc(dec_crc, decoded, 0, size);
             var trim = new byte[size];
             Array.Copy(decoded, 0, trim, 0, size);
             return trim;

@@ -310,6 +310,7 @@ namespace K5TOOL
         private static int OnCommand_Simula(string name, string[] v)
         {
             // bootloader simulator
+            Envelope.IsRadioEndpoint = true;
             using (var device = new Device(name)) // "/dev/serial0"
             {
                 var isMute = false;
@@ -333,12 +334,32 @@ namespace K5TOOL
                         var packetWrite = packet as PacketFlashWriteReq;
                         if (packetWrite != null)
                         {
+                            Console.WriteLine("flash offset=0x{0:x4}, size=0x{1:x4}, offsetFinal=0x{2:x4}", packetWrite.Offset, packetWrite.Size, packetWrite.OffsetFinal);
                             if (fwdata == null)
+                            {
                                 fwdata = new byte[packetWrite.OffsetFinal];
-                            Array.Copy(packetWrite.Data, 0, fwdata, packetWrite.Offset, packetWrite.Size);
-                            if (packetWrite.Size < 0x100)
+                                if (packetWrite.Offset != 0)
+                                {
+                                    Console.WriteLine("WARN: started from offset=0x{0:x4}", packetWrite.Offset);
+                                }
+                            }
+                            else if (fwdata.Length != packetWrite.OffsetFinal)
+                            {
+                                Console.WriteLine("WARN: offsetFinal unexpectedly changed 0x{0:x4} => 0x{1:x4}", fwdata.Length, packetWrite.OffsetFinal);
+                                if (fwdata.Length < packetWrite.OffsetFinal)
+                                {
+                                    var buf = new byte[packetWrite.OffsetFinal];
+                                    Array.Copy(fwdata, buf, fwdata.Length);
+                                }
+                            }
+                            //Array.Copy(packetWrite.Data, 0, fwdata, packetWrite.Offset, packetWrite.Size);
+                            Array.Copy(packetWrite.RawData, 16, fwdata, packetWrite.Offset, packetWrite.HdrSize - 12);
+
+                            // detect flashing complete event
+                            if (((packetWrite.Offset+0x100)&0xff00) == packetWrite.OffsetFinal)
                             {
                                 var shrink = 0x100 - packetWrite.Size;
+                                //var shrink = 0;
                                 var buf = new byte[fwdata.Length - shrink];
                                 Array.Copy(fwdata, buf, buf.Length);
                                 fwdata = buf;
@@ -347,7 +368,7 @@ namespace K5TOOL
                                 File.WriteAllBytes(fileName, fwdata);
                                 fwdata = null;
                             }
-                            Console.WriteLine("write 0x{0:x4}, 0x{1:x4}, [0x{2:x4}]", packetWrite.Offset, packetWrite.Size, packetWrite.OffsetFinal);
+
                             device.Send(new PacketFlashWriteAck(packetWrite.Offset, packetWrite.Id));
                         }
                         isMute = true;
@@ -361,10 +382,14 @@ namespace K5TOOL
 
         private static int OnCommand_Test(string name, string[] v)
         {
-            new Envelope(
-                // sim original updater
-                Utils.FromHex("abcd10010f6918e7bacc676c213533401302e9809e7f14c6fb910d40f835d540c803e980166c14e62e910d402135d5401303e980166c14e62e910d402135d540ce03e980166c14e62e910d40fe35d54036c7e980f56c14e6cb910d40c635d540fa03e980fd6c14e6c3910d40ce35d540e203e980e56c14e6db910d40d635d540ea03e980ed6c14e6d3910d40de35d5401202e980156d14e62b900d402634d5401a02e9801d6d14e623900d402e34d5400202e980056d14e63b900d403634d5400a02e9800d6d14e633900d403e34d5403202e980152491a02e6155bb217dd507fed2e9809e7f14c63dd90d07dfd22ba7ede41767e88bea01d076f3a7dfd22ba7ede41767e88bea01d076f3a7dfd22ba7ede4176775e1dcba")
-            ).Deserialize();
+            //new Envelope(
+            //    // sim original updater
+            //    Utils.FromHex("abcd10010f6918e7bacc676c213533401302e9809e7f14c6fb910d40f835d540c803e980166c14e62e910d402135d5401303e980166c14e62e910d402135d540ce03e980166c14e62e910d40fe35d54036c7e980f56c14e6cb910d40c635d540fa03e980fd6c14e6c3910d40ce35d540e203e980e56c14e6db910d40d635d540ea03e980ed6c14e6d3910d40de35d5401202e980156d14e62b900d402634d5401a02e9801d6d14e623900d402e34d5400202e980056d14e63b900d403634d5400a02e9800d6d14e633900d403e34d5403202e980152491a02e6155bb217dd507fed2e9809e7f14c63dd90d07dfd22ba7ede41767e88bea01d076f3a7dfd22ba7ede41767e88bea01d076f3a7dfd22ba7ede4176775e1dcba")
+            //).Deserialize();
+
+            Console.WriteLine("{0}",
+                Packet.Deserialize(Utils.FromHex("19050c01945d6a2c0000e6000001000088130020d5000000d9000000db00000000000000000000000000000000000000000000000000000000000000dd0000000000000000000000df00000025c40000e3000000e5000000e7000000e9000000eb000000ed000000ef000000f1000000f3000000f5000000f7000000f9000000fb000000fd000000ff00000001010000030100000501000007010000090100000b0100000d0100000f01000011010000130100001501000017010000190100001b0100001d0100001f010000210100000348854600f058fb00480047edd100008813002013480047fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7"))
+                .ToString());
 
             //new Envelope(new byte[] {
             //flasher-2023

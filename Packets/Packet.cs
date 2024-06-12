@@ -41,6 +41,8 @@ namespace K5TOOL.Packets
             }
         }
 
+        public byte[] RawData { get { return _rawData; } }
+
         public ushort HdrId
         {
             get { return (ushort)(_rawData[0] | (_rawData[1] << 8)); }
