@@ -238,7 +238,19 @@ namespace K5TOOL
 
         public static bool WriteFlash(Device device, string version, byte[] data)
         {
-            Console.WriteLine("Write FLASH size=0x{0:x4}", data.Length);
+            if (data.Length > 0x10000)
+                throw new ArgumentOutOfRangeException("data.Length");
+            var offsetFinal = (ushort)data.Length;
+            if ((offsetFinal & 0xff) != 0)
+                offsetFinal = (ushort)((offsetFinal + 0x100) & 0xff00);
+            if (offsetFinal > FirmwareConstraints.MaxFlashAddr + 1)
+                throw new InvalidOperationException(
+                    string.Format(
+                        "DANGEROUS FLASH ADDRESS WRITE! size=0x{0:x4}, offsetFinal=0x{1:x4}",
+                        data.Length,
+                        offsetFinal));
+
+            Console.WriteLine("Write FLASH size=0x{0:x4}, offsetFinal=0x{1:x4}", data.Length, offsetFinal);
             Console.WriteLine("Waiting for bootloader beacon...");
             var packet = device.Recv();
             var pktBeacon = packet as PacketFlashBeaconAck;
@@ -261,19 +273,6 @@ namespace K5TOOL
                 return false;
             }
             Console.WriteLine("   Bootloader: {0}", pktBeacon.Version);
-
-            if (data.Length > 0x10000)
-                throw new ArgumentOutOfRangeException("data.Length");
-            //uint id = 0;
-            ushort offsetFinal = (ushort)data.Length;
-            if ((offsetFinal & 0xff) != 0)
-                offsetFinal = (ushort)((offsetFinal + 0x100) & 0xff00);
-            if (offsetFinal > FirmwareConstraints.MaxFlashAddr+1)
-                throw new InvalidOperationException(
-                    string.Format(
-                        "DANGEROUS FLASH ADDRESS WRITE! size=0x{0:x4}, offsetFinal=0x{1:x4}",
-                        data.Length,
-                        offsetFinal));
 
             return ProcessAddressSpace(0x0000, data.Length, 0x100, FirmwareConstraints.MinFlashAddr, FirmwareConstraints.MaxFlashAddr, MaxFlashBlock,
                 (absOffset, blockOffset, blockLength) => {
