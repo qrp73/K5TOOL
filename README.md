@@ -28,16 +28,10 @@ sudo apt install mono-runtime
 ## Compile
 
 You can compile source code with MonoDevelop (which I'm using) or Visual Studio.
-On Windows you can run it from command line as usual executable K5TOOL.exe.
-On Linux/MacOS you can use it as ```mono K5TOOL.exe```.
-In order to get shortened command on Linux/MacOS you can create text file ```k5tool``` with the following content:
-```
-#!/bin/bash
-mono ./K5TOOL.exe "$@"
-```
-and make it executable with ```chmod +x k5tool```
 
-After that you can run it as Linux command k5tool.
+On Windows you can run it from command line as usual executable K5TOOL.exe.
+
+On Linux/MacOS add execute permission for bash launcher script with ```chmod +x k5tool```
 
 
 ## Logging
