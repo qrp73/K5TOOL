@@ -41,7 +41,7 @@ namespace K5TOOL
             _serial.Parity = Parity.None;
             _serial.DataBits = 8;
             _serial.StopBits = StopBits.One;
-            _serial.ReadTimeout = 1000;
+            _serial.ReadTimeout = 1500;
             _serial.Open();
 
             // empty rx buffer

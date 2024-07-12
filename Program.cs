@@ -48,8 +48,14 @@ namespace K5TOOL
                 "Unpack packed flash image to unpacked flash image (default outputName=fileName-{version}.raw)");
             CommandLineParser.RegisterCommand("-pack",       OnCommand_Pack,       "<version> <fileName> [<outputName>]",
                 "Pack unpacked flash image to packed flash image (default outputName=fileName.bin)");
-            CommandLineParser.RegisterCommand("-test",       OnCommand_Test,       null);
-            CommandLineParser.RegisterCommand("-simula",     OnCommand_Simula,     null);
+            CommandLineParser.RegisterCommand("-parse",      OnCommand_Parse,      "<hex data>",
+                "Parse provided hex data and print details");
+            CommandLineParser.RegisterCommand("-parse-plain",OnCommand_ParsePlain, "<hex data>",
+                "Parse provided hex data as plain packet (without envelope) and print details");
+            CommandLineParser.RegisterCommand("-sniffer", OnCommand_Sniffer,       "",
+                "Sniffer mode (listen for packets parse and print it to console)");
+            CommandLineParser.RegisterCommand("-test",       OnCommand_Test, null);
+            CommandLineParser.RegisterCommand("-simula",     OnCommand_Simula, null);
         }
 
         static int Main(string[] args)
@@ -57,6 +63,15 @@ namespace K5TOOL
             try
             {
                 var portName = CommandLineParser.GetPortName(ref args);
+                if (portName == string.Empty)
+                {
+                    // port list requested
+                    foreach (var name in System.IO.Ports.SerialPort.GetPortNames())
+                    {
+                        Console.WriteLine("{0}", name);
+                    }
+                    return 0;
+                }
                 if (portName == null)
                 {
                     portName = System.IO.Ports.SerialPort.GetPortNames().LastOrDefault();
@@ -307,6 +322,59 @@ namespace K5TOOL
             }
         }
 
+        private static int OnCommand_Parse(string name, string[] args)
+        {
+            Logger.IsPrintRaw = true;
+            Logger.IsPrintPlain = true;
+            Logger.IsPrintPacket = true;
+
+            var data = Utils.FromHex(string.Join(" ", args));
+            Console.WriteLine("{0} bytes", data.Length);
+            new Envelope(data).Deserialize();
+
+            Console.WriteLine("Done");
+            return 0;
+        }
+
+        private static int OnCommand_ParsePlain(string name, string[] args)
+        {
+            Logger.IsPrintRaw = true;
+            Logger.IsPrintPlain = true;
+            Logger.IsPrintPacket = true;
+
+            var data = Utils.FromHex(string.Join(" ", args));
+            Console.WriteLine("{0} bytes", data.Length);
+            Logger.LogRx(data);
+            var packet = Packet.Deserialize(data);
+            Logger.LogRxPacket(packet);
+
+            Console.WriteLine("Done");
+            return 0;
+        }
+
+        private static int OnCommand_Sniffer(string name, string[] v)
+        {
+            using (var device = new Device(name))
+            {
+                Console.Error.WriteLine("===SNIFFER MODE===");
+                for (; ; )
+                {
+                    try
+                    {
+                        var packet = device.Recv();
+                        Console.WriteLine("{0}", packet);
+                    }
+                    catch (TimeoutException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("[ERROR] {0}: {1}", ex.GetType().Name, ex.Message);
+                    }
+                }
+            }
+        }
+
         private static int OnCommand_Simula(string name, string[] v)
         {
             // bootloader simulator
@@ -380,36 +448,20 @@ namespace K5TOOL
             }
         }
 
-        private static int OnCommand_Test(string name, string[] v)
+        private static int OnCommand_Test(string name, string[] args)
         {
-            //new Envelope(
-            //    // sim original updater
-            //    Utils.FromHex("abcd10010f6918e7bacc676c213533401302e9809e7f14c6fb910d40f835d540c803e980166c14e62e910d402135d5401303e980166c14e62e910d402135d540ce03e980166c14e62e910d40fe35d54036c7e980f56c14e6cb910d40c635d540fa03e980fd6c14e6c3910d40ce35d540e203e980e56c14e6db910d40d635d540ea03e980ed6c14e6d3910d40de35d5401202e980156d14e62b900d402634d5401a02e9801d6d14e623900d402e34d5400202e980056d14e63b900d403634d5400a02e9800d6d14e633900d403e34d5403202e980152491a02e6155bb217dd507fed2e9809e7f14c63dd90d07dfd22ba7ede41767e88bea01d076f3a7dfd22ba7ede41767e88bea01d076f3a7dfd22ba7ede4176775e1dcba")
-            //).Deserialize();
+            Logger.IsPrintRaw = true;
+            Logger.IsPrintPlain = true;
+            Logger.IsPrintPacket = true;
 
-            Console.WriteLine("{0}",
-                Packet.Deserialize(Utils.FromHex("19050c01945d6a2c0000e6000001000088130020d5000000d9000000db00000000000000000000000000000000000000000000000000000000000000dd0000000000000000000000df00000025c40000e3000000e5000000e7000000e9000000eb000000ed000000ef000000f1000000f3000000f5000000f7000000f9000000fb000000fd000000ff00000001010000030100000501000007010000090100000b0100000d0100000f01000011010000130100001501000017010000190100001b0100001d0100001f010000210100000348854600f058fb00480047edd100008813002013480047fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7fee7"))
-                .ToString());
-
-            //new Envelope(new byte[] {
-            //flasher-2023
-            //0xab,0xcd,0x24,0x00,0x0e,0x69,0x34,0xe6,0x2f,0x93,0x0f,0x4b,0x2d,0x66,0x93,0x74,
-            //0x41,0x5a,0x16,0x88,0x9a,0x6c,0x26,0xe6,0x1c,0xbf,0x3d,0x70,0x0f,0x05,0xe3,0x40,
-            //0x27,0x09,0xe9,0x80,0x16,0x6c,0x14,0xc6,0xff,0xff,0xdc,0xba,                      
-
-            //flasher-2024
-            //0xab,0xcd,0x24,0x00,0x0e,0x69,0x34,0xe6,0x2f,0x93,0x0e,0x42,0x2d,0x66,0x9f,0x73,
-            //0x5e,0x40,0x16,0x8f,0x65,0x6c,0xb9,0xe6,0x1c,0xbf,0x3d,0x70,0x0f,0x05,0xe3,0x40,
-            //0x27,0x09,0xe9,0x80,0x16,0x6c,0x14,0xc6,0xff,0xff,0xdc,0xba,
-            //}).Deserialize();
-
-            //new Envelope(new PacketReqHello(0x1)).Serialize();
+            new Envelope(new PacketHelloReq(Utils.ToUnixTimeSeconds(DateTime.UtcNow))).Serialize();
             //new Envelope(new PacketReqRdEEPROM(0x0080, 0x80)).Serialize();
             //new Envelope(new PacketReqWrEEPROM(0xaabb, new byte[0x80])).Serialize();
             //new Envelope(new PacketReqBatteryInfo()).Serialize();
             //new Envelope(new PacketWriteFlashReq(0x1111, 0x0022, new byte[0x100])).Serialize();
             //new Envelope(new PacketFlashVersionReq()).Serialize();
 
+            Console.WriteLine("Done");
             return 0;
         }
     }

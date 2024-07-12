@@ -39,11 +39,16 @@ namespace K5TOOL
 
         public static string GetPortName(ref string[] args)
         {
-            if (args.Length >= 2 && args[0] == "-port")
+            if (args.Length < 1) return null;
+            if (args[0] == "-port")
             {
-                var name = args[1];
-                args = args.Skip(2).ToArray();
-                return name;
+                if (args.Length > 1)
+                {
+                    var name = args[1];
+                    args = args.Skip(2).ToArray();
+                    return name;
+                }
+                return string.Empty; // port list request
             }
             return null;
         }
