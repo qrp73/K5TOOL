@@ -80,6 +80,13 @@ for Windows:
 ./k5tool -port COM3 -hello
 ```
 
+You can use empty -port option to get all available serial ports on the system:
+```
+$ ./k5tool -port
+/dev/ttyS0
+/dev/ttyUSB0
+```
+
 ## Reboot the radio and show bootloader version
 
 ```
@@ -269,4 +276,44 @@ $ ./k5tool -port /dev/ttyUSB1 -simula
 
 Simulate device bootloader, can be used for testing and analyze firmware updaters.
 Where ```/dev/ttyUSB1``` is a name of serial port which is used for UV-K5 device simulation.
+
+
+## Parse hex data
+
+```
+$ ./k5tool -parse abcd2800036930e66bd657156c7087606533c7b2246c14e62e910d402135d5401303e980166c14e62e910d40decadcba
+48 bytes
+rx: abcd2800036930e66bd657156c7087606533c7b2246c14e62e910d402135d5401303e980166c14e62e910d40decadcba
+RX: 1505240045475a554d45522076302e32320000000000000000000000000000000000000000000000
+recv PacketHelloAck {
+  HdrSize=36
+  Version="EGZUMER v0.22"
+  HasCustomAesKey=0
+  IsPasswordLocked=0
+  Padding[0]=0x00
+  Padding[1]=0x00
+  Challenge[0]=0x00000000
+  Challenge[1]=0x00000000
+  Challenge[2]=0x00000000
+  Challenge[3]=0x00000000
+}
+Done
+
+$ ./k5tool -parse-plain 1505240045475a554d45522076302e32320000000000000000000000000000000000000000000000
+40 bytes
+RX: 1505240045475a554d45522076302e32320000000000000000000000000000000000000000000000
+recv PacketHelloAck {
+  HdrSize=36
+  Version="EGZUMER v0.22"
+  HasCustomAesKey=0
+  IsPasswordLocked=0
+  Padding[0]=0x00
+  Padding[1]=0x00
+  Challenge[0]=0x00000000
+  Challenge[1]=0x00000000
+  Challenge[2]=0x00000000
+  Challenge[3]=0x00000000
+}
+Done
+```
 
