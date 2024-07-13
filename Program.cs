@@ -74,7 +74,16 @@ namespace K5TOOL
                 }
                 if (portName == null)
                 {
-                    portName = System.IO.Ports.SerialPort.GetPortNames().LastOrDefault();
+                    var ports = System.IO.Ports.SerialPort.GetPortNames();
+                    var isLinuxStyle = ports.Any(arg => arg.StartsWith("/dev/tty", StringComparison.InvariantCulture));
+                    if (isLinuxStyle)
+                    {
+                        // Linux: prefer ttyUSB* device as default
+                        ports = ports
+                            .OrderBy(arg => arg.IndexOf("USB", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                            .ToArray();
+                    }
+                    portName = ports.LastOrDefault();
                     if (portName == null)
                         throw new FileNotFoundException("Cannot find serial port");
                 }
