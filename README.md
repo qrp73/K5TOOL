@@ -278,6 +278,15 @@ Simulate device bootloader, can be used for testing and analyze firmware updater
 Where ```/dev/ttyUSB1``` is a name of serial port which is used for UV-K5 device simulation.
 
 
+## Protocol sniffer mode
+
+```
+$ ./k5tool -sniffer
+```
+
+Can be used for diagnostic purpose. In this mode the tool don't sends anything, just monitor for packets on RxD line in a loop and prints decrypted packets to console.
+
+
 ## Parse hex data
 
 ```
