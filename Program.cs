@@ -393,10 +393,11 @@ namespace K5TOOL
                 var isMute = false;
                 byte[] fwdata = null;
                 string fwvers = null;
+                var packetFlashBeacon = new PacketFlashBeaconAck(false);
                 for (; ; )
                 {
                     if (!isMute)
-                        device.Send(new PacketFlashBeaconAck());
+                        device.Send(packetFlashBeacon);
                     try
                     {
                         var packet = device.Recv();
@@ -406,34 +407,36 @@ namespace K5TOOL
                         {
                             fwvers = packetVer.Version;
                             Console.WriteLine("flashVersion: {0}", packetVer.Version);
-                            device.Send(new PacketFlashBeaconAck());
+                            continue;
+                            //device.Send(packetFlashBeacon);
                         }
                         var packetWrite = packet as PacketFlashWriteReq;
                         if (packetWrite != null)
                         {
-                            Console.WriteLine("flash offset=0x{0:x4}, size=0x{1:x4}, offsetFinal=0x{2:x4}", packetWrite.Offset, packetWrite.Size, packetWrite.OffsetFinal);
+                            Console.WriteLine("flash chunkNumber=0x{0:x4}, size=0x{1:x4}, chunkCount=0x{2:x4}", packetWrite.ChunkNumber, packetWrite.Size, packetWrite.ChunkCount);
                             if (fwdata == null)
                             {
-                                fwdata = new byte[packetWrite.OffsetFinal];
-                                if (packetWrite.Offset != 0)
+                                fwdata = new byte[packetWrite.ChunkCount*0x100];
+                                if (packetWrite.ChunkNumber != 0)
                                 {
-                                    Console.WriteLine("WARN: started from offset=0x{0:x4}", packetWrite.Offset);
+                                    Console.WriteLine("WARN: started from chunkNumber=0x{0:x4}", packetWrite.ChunkNumber);
                                 }
                             }
-                            else if (fwdata.Length != packetWrite.OffsetFinal)
+                            else if (fwdata.Length != packetWrite.ChunkCount*0x100)
                             {
-                                Console.WriteLine("WARN: offsetFinal unexpectedly changed 0x{0:x4} => 0x{1:x4}", fwdata.Length, packetWrite.OffsetFinal);
-                                if (fwdata.Length < packetWrite.OffsetFinal)
+                                Console.WriteLine("WARN: chunkCount unexpectedly changed 0x{0:x4} => 0x{1:x4}", fwdata.Length/0x100, packetWrite.ChunkCount);
+                                var expectedSize = packetWrite.ChunkCount * 0x100;
+                                if (fwdata.Length < expectedSize)
                                 {
-                                    var buf = new byte[packetWrite.OffsetFinal];
+                                    var buf = new byte[expectedSize];
                                     Array.Copy(fwdata, buf, fwdata.Length);
                                 }
                             }
                             //Array.Copy(packetWrite.Data, 0, fwdata, packetWrite.Offset, packetWrite.Size);
-                            Array.Copy(packetWrite.RawData, 16, fwdata, packetWrite.Offset, packetWrite.HdrSize - 12);
+                            Array.Copy(packetWrite.RawData, 16, fwdata, packetWrite.ChunkNumber*0x100, packetWrite.HdrSize - 12);
 
                             // detect flashing complete event
-                            if (((packetWrite.Offset+0x100)&0xff00) == packetWrite.OffsetFinal)
+                            if (packetWrite.ChunkNumber == packetWrite.ChunkCount-1)
                             {
                                 var shrink = 0x100 - packetWrite.Size;
                                 //var shrink = 0;
@@ -446,7 +449,7 @@ namespace K5TOOL
                                 fwdata = null;
                             }
 
-                            device.Send(new PacketFlashWriteAck(packetWrite.Offset, packetWrite.Id));
+                            device.Send(new PacketFlashWriteAck(packetWrite.ChunkNumber, packetWrite.SequenceId));
                         }
                         isMute = true;
                     }

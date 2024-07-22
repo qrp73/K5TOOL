@@ -19,7 +19,9 @@
 using System;
 namespace K5TOOL.Packets
 {
-    // ?? 1a050800 8a8d9f1d 0000 0000
+    // OK:      1a0508008a8d9f1d00000000
+    // bad id:  1a0508000000000000000100
+    // bad ver: 1a0508000000000000000100
     public class PacketFlashWriteAck : Packet
     {
         public const ushort ID = 0x051a;
@@ -35,12 +37,12 @@ namespace K5TOOL.Packets
             }
         }
 
-        public PacketFlashWriteAck(ushort offset, uint id = 0x1d9f8d8a)
-            : this(MakePacketBuffer(id, offset, 0x0000))
+        public PacketFlashWriteAck(ushort chunkNumber, uint sequenceId = 0x1d9f8d8a)
+            : this(MakePacketBuffer(sequenceId, chunkNumber, 0x0000))
         {
         }
 
-        private static byte[] MakePacketBuffer(uint id, ushort offset, ushort padding)
+        private static byte[] MakePacketBuffer(uint sequenceId, ushort chunkNumber, ushort padding)
         {
             var hdrSize = 8;
             var buf = new byte[12];
@@ -48,30 +50,37 @@ namespace K5TOOL.Packets
             buf[1] = 0x05;
             buf[2] = (byte)hdrSize;
             buf[3] = (byte)(hdrSize >> 8);
-            buf[4] = (byte)id;
-            buf[5] = (byte)(id >> 8);
-            buf[6] = (byte)(id >> 16);
-            buf[7] = (byte)(id >> 24);
-            buf[8] = (byte)(offset >> 8);
-            buf[9] = (byte)offset;
-            buf[10] = (byte)(padding >> 8);
-            buf[11] = (byte)padding;
+            buf[4] = (byte)sequenceId;
+            buf[5] = (byte)(sequenceId >> 8);
+            buf[6] = (byte)(sequenceId >> 16);
+            buf[7] = (byte)(sequenceId >> 24);
+            buf[8] = (byte)chunkNumber;
+            buf[9] = (byte)(chunkNumber >> 8);
+            buf[10] = (byte)padding;
+            buf[11] = (byte)(padding >> 8);
             return buf;
         }
 
-        public uint Id
+        public uint SequenceId
         {
             get { return (uint)(_rawData[4] | (_rawData[5] << 8) | (_rawData[6] << 16) | (_rawData[7] << 24)); }
         }
 
-        public ushort Offset
+        public ushort ChunkNumber
         {
-            get { return (ushort)((_rawData[8] << 8) | _rawData[9]); }
+            get { return (ushort)(_rawData[8] | (_rawData[9] << 8)); }
         }
 
-        public ushort Padding
+        // 0=OK
+        // 1=Error
+        public byte Result
         {
-            get { return (ushort)((_rawData[10] << 8) | _rawData[11]); }
+            get { return _rawData[10]; }
+        }
+        // What is this?
+        public byte V0
+        {
+            get { return _rawData[11]; }
         }
 
         public override string ToString()
@@ -79,15 +88,17 @@ namespace K5TOOL.Packets
             return string.Format(
                 "{0} {{\n" +
                 "  HdrSize={1}\n" +
-                "  Id=0x{2:x8}\n" +
-                "  Offset=0x{3:x4}\n" +
-                "  Padding=0x{4:x4}\n" +
+                "  SequenceId=0x{2:x8}\n" +
+                "  ChunkNumber=0x{3:x4}\n" +
+                "  Result={4}\n" +
+                "  V0={5}\n" +
                 "}}",
                 this.GetType().Name,
                 HdrSize,
-                Id,
-                Offset,
-                Padding);
+                SequenceId,
+                ChunkNumber,
+                Result,
+                V0);
         }
     }
 }

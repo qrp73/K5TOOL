@@ -236,13 +236,21 @@ namespace K5TOOL
             return CommandHelper.WriteFlash(device, version, data);
         }
 
+        private static uint GenerateId()
+        {
+            var random = new Random();
+            return (uint)random.Next(1, int.MaxValue);
+        }
+
         public static bool WriteFlash(Device device, string version, byte[] data)
         {
             if (data.Length > 0x10000)
                 throw new ArgumentOutOfRangeException("data.Length");
-            var offsetFinal = (ushort)data.Length;
-            if ((offsetFinal & 0xff) != 0)
-                offsetFinal = (ushort)((offsetFinal + 0x100) & 0xff00);
+            const int chunkSize = 0x100;
+            var chunkCount = (ushort)(data.Length / chunkSize);
+            if ((data.Length % chunkSize) != 0)
+                chunkCount++;
+            var offsetFinal = chunkCount * chunkSize;
             if (offsetFinal > FirmwareConstraints.MaxFlashAddr + 1)
                 throw new InvalidOperationException(
                     string.Format(
@@ -250,7 +258,7 @@ namespace K5TOOL
                         data.Length,
                         offsetFinal));
 
-            Console.WriteLine("Write FLASH size=0x{0:x4}, offsetFinal=0x{1:x4}", data.Length, offsetFinal);
+            Console.WriteLine("Write FLASH size=0x{0:x4}", data.Length);
             Console.WriteLine("Waiting for bootloader beacon...");
             var packet = device.Recv();
             var pktBeacon = packet as PacketFlashBeaconAck;
@@ -260,6 +268,11 @@ namespace K5TOOL
                 return false;
             }
             Console.WriteLine("   Bootloader: {0}", pktBeacon.Version);
+            if (pktBeacon.HdrId != PacketFlashBeaconAck.ID)
+            {
+                Logger.Error("Sorry, this bootloader is not supported yet");
+                return false;
+            }
             var pktVersion = version != null ? 
                 new PacketFlashVersionReq(version) :
                 new PacketFlashVersionReq();
@@ -274,20 +287,28 @@ namespace K5TOOL
             }
             Console.WriteLine("   Bootloader: {0}", pktBeacon.Version);
 
-            return ProcessAddressSpace(0x0000, data.Length, 0x100, FirmwareConstraints.MinFlashAddr, FirmwareConstraints.MaxFlashAddr, MaxFlashBlock,
+            var seqId = GenerateId();
+
+            return ProcessAddressSpace(0x0000, data.Length, chunkSize, FirmwareConstraints.MinFlashAddr, FirmwareConstraints.MaxFlashAddr, MaxFlashBlock,
                 (absOffset, blockOffset, blockLength) => {
                 Console.Write("   Write {0:x4}...{1:x4}: ", absOffset, absOffset + blockLength);
                 var subData = new byte[blockLength];
                 Array.Copy(data, blockOffset, subData, 0, subData.Length);
-                device.Send(new PacketFlashWriteReq((ushort)absOffset, offsetFinal, subData));
+                var chunkNumber = (ushort)(absOffset / chunkSize);
+                device.Send(new PacketFlashWriteReq(chunkNumber, chunkCount, subData, seqId));
                 //Packet packet;
-                for (; ; )
+                for (var counter=0; ; counter++)
                 {
                     packet = device.Recv();
                     if (packet is PacketFlashBeaconAck)
                         Console.Write("[beacon]");
                     else
                         break;
+                    if (counter > 10)
+                    {
+                        Logger.Error("No response");
+                        return false;
+                    }
                 }
                 var wrpacket = packet as PacketFlashWriteAck;
                 if (wrpacket == null)
@@ -295,14 +316,19 @@ namespace K5TOOL
                     Logger.Error("Unexpected response {0}", packet);
                     return false;
                 }
-                if (wrpacket.Offset != absOffset)
+                if (wrpacket.Result != 0)
                 {
-                    Logger.Warn("Unexpected offset in response {0}", packet);
+                    Logger.Error("Write failed with error code {0}", wrpacket.Result);
+                    return false;
+                }
+                if (wrpacket.ChunkNumber != chunkNumber)
+                {
+                    Logger.Warn("Unexpected ChunkNumber in response {0}", packet);
                     return false;
                 }
                 //if (wrpacket.Id != id)
                 //{
-                //    Logger.Warn("Unexpected response Id (0x{0:x8}!=0x{1:x8})", wrpacket.Id, id);
+                //    Logger.Warn("Unexpected response Id (0x{0:x8}!=0x{1:x8})", wrpacket.SequenceId, id);
                 //}
                 Console.WriteLine("OK");
                 return true;

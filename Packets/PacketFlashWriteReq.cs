@@ -38,26 +38,30 @@ namespace K5TOOL.Packets
             }
         }
 
-        public PacketFlashWriteReq(ushort offset, ushort offsetFinal, byte[] data, uint id=0x1d9f8d8a)
-            : base(MakePacketBuffer(id, offset, offsetFinal, data, 0x0000))
+        public PacketFlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] data)
+            : this(chunkNumber, chunkCount, data, 0x1d9f8d8a)
         {
-            if (offsetFinal < offset+0x100)
-                throw new ArgumentOutOfRangeException("offsetFinal");
-            if (offset + 0x100 > FirmwareConstraints.MaxFlashAddr+1 || offsetFinal > FirmwareConstraints.MaxFlashAddr+1)
+        }
+
+        public PacketFlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] data, uint id/*=0x1d9f8d8a*/)
+            : base(MakePacketBuffer(id, chunkNumber, chunkCount, data, 0x0000))
+        {
+            if (chunkNumber > chunkCount)
+                throw new ArgumentOutOfRangeException("chunkNumber");
+            if (chunkCount > FirmwareConstraints.MaxFlashAddr + 1)
                 throw new InvalidOperationException(
                     string.Format(
-                        "DANGEROUS FLASH ADDRESS WRITE! offset=0x{0:x4}, offsetFinal=0x{1:x4}",
-                        offset + 0x100,
-                        offsetFinal));
+                        "chunkCount={0:x4}!",
+                        chunkCount));
         }
 
         // 0x19, 0x5, 0xc, 0x1, 0x8a, 0x8d, 0x9f, 0x1d, address_msb, address_lsb, address_final_msb, address_final_lsb, length_msb, length_lsb, 0x0, 0x0, ...data
-        private static byte[] MakePacketBuffer(uint id, ushort offset, ushort offsetFinal, byte[] data, ushort padding)
+        private static byte[] MakePacketBuffer(uint id, ushort chunkNumber, ushort chunkCount, byte[] data, ushort padding)
         {
             if (data.Length > 0x100)
                 throw new ArgumentOutOfRangeException("data");
-            if ((offsetFinal & 0x00ff) != 0)
-                throw new ArgumentOutOfRangeException("offsetFinal");
+            if ((chunkCount & 0xff00) != 0)
+                throw new ArgumentOutOfRangeException("chunkCount>0x100 is not tested yet");
             var length = data.Length;
             var buf = new byte[16 + 0x100];
             var hdrSize = buf.Length - 4;
@@ -71,34 +75,31 @@ namespace K5TOOL.Packets
             buf[5] = (byte)(id >> 8);           // 0x8d
             buf[6] = (byte)(id >> 16);          // 0x9f
             buf[7] = (byte)(id >> 24);          // 0x1d
-            buf[8] = (byte)(offset >> 8);       // why reverse?
-            buf[9] = (byte)offset;
-            buf[10] = (byte)(offsetFinal >> 8);   // why reverse?
-            buf[11] = (byte)offsetFinal;          // always 0x00?
-            buf[12] = (byte)length;             // wtf???
-            buf[13] = (byte)(length >> 8);      // wtf???      
+            buf[8] = (byte)chunkNumber;
+            buf[9] = (byte)(chunkNumber >> 8);
+            buf[10] = (byte)chunkCount;
+            buf[11] = (byte)(chunkCount >> 8);
+            buf[12] = (byte)length;
+            buf[13] = (byte)(length >> 8);
             buf[14] = (byte)padding;            // 0x00
             buf[15] = (byte)(padding >> 8);     // 0x00
             Array.Copy(data, 0, buf, 16, data.Length);
             return buf;
         }
 
-        // ??? random id don't works!
-        // 0x1d9f8d8a
-        public uint Id
+        public uint SequenceId
         {
             get { return (uint)(_rawData[4] | (_rawData[5] << 8) | (_rawData[6] << 16) | (_rawData[7] << 24)); }
         }
 
-        public ushort Offset
+        public ushort ChunkNumber
         {
-            get { return (ushort)(_rawData[9] | (_rawData[8] << 8)); }
+            get { return (ushort)(_rawData[8] | (_rawData[9] << 8)); }
         }
 
-        // expected last write per session 0xe600
-        public ushort OffsetFinal
+        public ushort ChunkCount
         {
-            get { return (ushort)(_rawData[11] | (_rawData[10] << 8)); }
+            get { return (ushort)(_rawData[10] | (_rawData[11] << 8)); }
         }
 
         public ushort Size
@@ -126,18 +127,18 @@ namespace K5TOOL.Packets
             return string.Format(
                 "{0} {{\n" +
                 "  HdrSize={1}\n" +
-                "  Id=0x{2:x8}\n" +
-                "  Offset=0x{3:x4}\n" +
-                "  OffsetFinal=0x{4:x4}\n" +
+                "  SequenceId=0x{2:x8}\n" +
+                "  ChunkNumber=0x{3:x4}\n" +
+                "  ChunkCount=0x{4:x4}\n" +
                 "  Size=0x{5:x2}\n" +
                 "  Padding=0x{6:x4}\n" +
                 "  Data={7}\n" +
                 "}}",
                 this.GetType().Name,
                 HdrSize,
-                Id,
-                Offset,
-                OffsetFinal,
+                SequenceId,
+                ChunkNumber,
+                ChunkCount,
                 Size,
                 Padding,
                 Utils.ToHex(Data));

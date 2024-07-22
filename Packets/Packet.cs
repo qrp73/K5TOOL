@@ -88,7 +88,9 @@ namespace K5TOOL.Packets
                 case PacketFlashVersionReq.ID: return new PacketFlashVersionReq(data);
                 case PacketFlashWriteAck.ID: return new PacketFlashWriteAck(data);
                 case PacketFlashWriteReq.ID: return new PacketFlashWriteReq(data);
-                
+                // bootloader 5.00.01
+                case PacketFlashBeaconAck.ID2: return new PacketFlashBeaconAck(data);
+
                 // firmware
                 case PacketHelloAck.ID: return new PacketHelloAck(data);
                 case PacketHelloReq.ID: return new PacketHelloReq(data);
