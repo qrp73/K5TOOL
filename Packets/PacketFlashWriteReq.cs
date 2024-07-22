@@ -48,7 +48,7 @@ namespace K5TOOL.Packets
         {
             if (chunkNumber > chunkCount)
                 throw new ArgumentOutOfRangeException("chunkNumber");
-            if (chunkCount > FirmwareConstraints.MaxFlashAddr + 1)
+            if (chunkCount*0x100 > FirmwareConstraints.MaxFlashAddr + 1)
                 throw new InvalidOperationException(
                     string.Format(
                         "chunkCount={0:x4}!",
