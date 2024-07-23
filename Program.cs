@@ -169,7 +169,9 @@ namespace K5TOOL
                     Console.WriteLine("ERROR: invalid arguments");
                     return -1;
             }
+            Console.WriteLine("Read {0}...", inputFile);
             var decoded = File.ReadAllBytes(inputFile);
+            Console.WriteLine("   Version: \"{0}\"", version);
             var encoded = FirmwareHelper.Pack(decoded, version);
             Console.WriteLine("Write {0}...", outputFile);
             File.WriteAllBytes(outputFile, encoded);
@@ -195,10 +197,11 @@ namespace K5TOOL
                     Console.WriteLine("ERROR: invalid arguments");
                     return -1;
             }
+            Console.WriteLine("Read {0}...", inputFile);
             var encoded = File.ReadAllBytes(inputFile);
             string version;
             var decoded = FirmwareHelper.Unpack(encoded, out version);
-            Console.WriteLine("   Version: {0}", version);
+            Console.WriteLine("   Version: \"{0}\"", version);
             if (outputFile == null)
             {
                 outputFile = string.Format("{0}-{1}.raw",

@@ -267,7 +267,7 @@ namespace K5TOOL
                 Logger.Error("Unexpected response {0}", packet);
                 return false;
             }
-            Console.WriteLine("   Bootloader: {0}", pktBeacon.Version);
+            Console.WriteLine("   Bootloader: \"{0}\"", pktBeacon.Version);
             if (pktBeacon.HdrId != PacketFlashBeaconAck.ID)
             {
                 Logger.Error("Sorry, this bootloader is not supported yet");
@@ -285,7 +285,7 @@ namespace K5TOOL
                 Logger.Error("Unexpected response {0}", packet);
                 return false;
             }
-            Console.WriteLine("   Bootloader: {0}", pktBeacon.Version);
+            Console.WriteLine("   Bootloader: \"{0}\"", pktBeacon.Version);
 
             var seqId = GenerateId();
 

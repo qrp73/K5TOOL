@@ -27,16 +27,16 @@ namespace K5TOOL.Packets
     {
         protected readonly byte[] _rawData;
 
-        public Packet(byte[] rawData)
+        public Packet(byte[] rawData, bool suppressWarning=false)
         {
             _rawData = rawData;
             // validate packet size constraints
-            if (_rawData.Length != HdrSize+4)
+            if (!suppressWarning && _rawData.Length != HdrSize+4)
             {
                 Console.WriteLine(
-                    "WARN: {0}.HdrSize+4 != rawData.Length ({1} != {2})",
+                    "WARN: {0}.HdrSize != rawData.Length-4 ({1} != {2}-4)",
                     this.GetType().Name,
-                    HdrSize + 4,
+                    HdrSize,
                     _rawData.Length);
             }
         }

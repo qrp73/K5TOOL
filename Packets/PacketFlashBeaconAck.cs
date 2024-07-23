@@ -22,47 +22,45 @@ using System.Text;
 
 namespace K5TOOL.Packets
 {
-    // bootloader 2: 
-    //    can be 20 bytes or 36 bytes
-    //    for 20 bytes there is no version
-    //                   
+    // old:   18050000 010202020e53504a3747ff018b00c000
+    // b2new: 18052000 010202061c53504a3747ff0f8c005300 322e30302e303600340a000000000020
+    // b5:    7a052000 010202061c53504a3747ff1093008900 352e30302e303100280c000000000020
     public class PacketFlashBeaconAck : Packet
     {
         public const ushort ID = 0x0518;
         public const ushort ID2 = 0x057a;
 
         public PacketFlashBeaconAck(byte[] rawData)
-            : base(rawData)
+            : base(rawData, true)
         {
             if (base.HdrId != ID && base.HdrId != ID2)
                 throw new InvalidOperationException();
-            if (base.HdrSize < 18 || base.HdrSize > 50)
+            // bootloader 2: 
+            //    can be 20 bytes or 36 bytes
+            //    for 20 bytes there is no version and HdrSize=0
+            if (rawData.Length != 20 && rawData.Length != 36)
             {
-                /*throw new InvalidOperationException(
-                    string.Format(
-                        "{0}.HdrSize = {1}, expected range {2}..{3}", 
-                        this.GetType().Name, 
-                        base.HdrSize, 18, 50));
-                */                       
                 Console.WriteLine(
-                    "WARN: {0}.HdrSize = {1}, expected range {2}..{3}",
+                    "WARN: sizeof({0}) = {1}, expected 20 or 36",
                     this.GetType().Name,
-                    base.HdrSize, 18, 50);
+                    base.HdrSize);
+            }
+            if (rawData.Length != 20 && base.HdrSize != _rawData.Length-4)
+            {
+                Console.WriteLine(
+                    "WARN: {0}.HdrSize != rawData.Length-4 ({1} != {2}-4)",
+                    this.GetType().Name,
+                    HdrSize,
+                    _rawData.Length);
             }
         }
 
-        // bootloader 2.00.06
-        // 18 05 20 00
-        // 01 02 02 0B 0C 53 46 34 52 59 FF 08 8C 00 32 00 
-        // 32 2E 30 30 2E 30 36 00 34 0A 00 00 00 00 00 20
-        // bootloader 5.00.01
-        // 7a 05 20 00
-        // 01 02 02 06 1c 53 50 4a 37 47 ff 10 93 00 89 00 
-        // 35 2e 30 30 2e 30 31 00 28 0c 00 00 00 00 00 20
+        // bootloader 2.00.06: 18052000 010202061c53504a3747ff0f8c005300 322e30302e303600340a000000000020
+        // bootloader 5.00.01: 7a052000 010202061c53504a3747ff1093008900 352e30302e303100280c000000000020
         public PacketFlashBeaconAck(bool isBL5=false)
             : this(isBL5 ? 
                 Utils.FromHex("7a052000010202061c53504a3747ff1093008900352e30302e303100280c000000000020") :
-                Utils.FromHex("180520000102020b0c5346345259ff088c003200322e30302e303600340a000000000020"))
+                Utils.FromHex("18052000010202061c53504a3747ff0f8c005300322e30302e303600340a000000000020"))
         {
         }
 
@@ -90,21 +88,40 @@ namespace K5TOOL.Packets
         {
             get
             {
-                var len = Math.Min(12, _rawData.Length - 0x10 - 4);
-                if (len < 0)
+                var len = Math.Min(16, _rawData.Length - 20);
+                if (len <= 0)
                     return null;
                 for (var i = 0; i < len; i++)
-                    if (_rawData[i + 4 + 0x10] == 0)
+                    if (_rawData[20 + i] == 0)
                     {
                         len = i;
                         break;
                     }
-                return Encoding.UTF8.GetString(_rawData, 4 + 0x10, len);
+                return Encoding.UTF8.GetString(_rawData, 20, len);
             }
         }
 
         public override string ToString()
         {
+            if (Version == null)
+            {
+                return string.Format(
+                    "{0} {{\n" +
+                    "  HdrId=0x{1:x4}\n" +
+                    "  HdrSize={2}\n" +
+                    "  K0=0x{3:x8}\n" +
+                    "  K1=0x{4:x8}\n" +
+                    "  K2=0x{5:x8}\n" +
+                    "  K3=0x{6:x8}\n" +
+                    "}}",
+                    this.GetType().Name,
+                    HdrId,
+                    HdrSize,
+                    K0,
+                    K1,
+                    K2,
+                    K3);
+            }
             return string.Format(
                 "{0} {{\n" +
                 "  HdrId=0x{1:x4}\n" +
