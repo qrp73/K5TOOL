@@ -100,8 +100,7 @@ namespace K5TOOL
         {
             using (var device = new Device(name))
             {
-                if (!CommandHelper.Handshake(device))
-                    return -2;
+                ProtocolBase.Hello(device);
                 Console.WriteLine("Done");
                 return 0;
             }
@@ -111,10 +110,8 @@ namespace K5TOOL
         {
             using (var device = new Device(name))
             {
-                if (!CommandHelper.Handshake(device))
-                    return -2;
-                if (!CommandHelper.Reboot(device))
-                    return -2;
+                var protocol = ProtocolBase.Hello(device);
+                protocol.Reboot();
                 Console.WriteLine("Done");
                 return 0;
             }
@@ -124,10 +121,10 @@ namespace K5TOOL
         {
             using (var device = new Device(name))
             {
-                if (!CommandHelper.Handshake(device))
-                    return -2;
-                if (!CommandHelper.ReadAdc(device))
-                    return -2;
+                var protocol = ProtocolBase.Hello(device);
+                var adc = protocol.ReadAdc();
+                Console.WriteLine("   Voltage:          {0}", adc.Voltage);
+                Console.WriteLine("   Current:          {0}", adc.Current);
                 Console.WriteLine("Done");
                 return 0;
             }
@@ -137,10 +134,11 @@ namespace K5TOOL
         {
             using (var device = new Device(name))
             {
-                if (!CommandHelper.Handshake(device))
-                    return -2;
-                if (!CommandHelper.ReadRssi(device))
-                    return -2;
+                var protocol = ProtocolBase.Hello(device);
+                var rssi = protocol.ReadRssi();
+                Console.WriteLine("   RSSI:             {0}", rssi.RSSI);
+                Console.WriteLine("   ExNoiseIndicator: {0}", rssi.ExNoiseIndicator);
+                Console.WriteLine("   GlitchIndicator:  {0}", rssi.GlitchIndicator);
                 Console.WriteLine("Done");
                 return 0;
             }
@@ -295,9 +293,8 @@ namespace K5TOOL
             }
             using (var device = new Device(name))
             {
-                if (!CommandHelper.Handshake(device))
-                    return -2;
-                if (!CommandHelper.ReadEeprom(device, offset, size, fileName))
+                var protocol = ProtocolBase.Hello(device);
+                if (!CommandHelper.ReadEeprom(protocol, offset, size, fileName))
                     return -2;
                 Console.WriteLine("Done");
                 return 0;
@@ -325,9 +322,8 @@ namespace K5TOOL
             }
             using (var device = new Device(name))
             {
-                if (!CommandHelper.Handshake(device))
-                    return -2;
-                if (!CommandHelper.WriteEeprom(device, offset, fileName))
+                var protocol = ProtocolBase.Hello(device);
+                if (!CommandHelper.WriteEeprom(protocol, offset, fileName))
                     return -2;
                 Console.WriteLine("Done");
                 return 0;
@@ -393,10 +389,11 @@ namespace K5TOOL
             Envelope.IsRadioEndpoint = true;
             using (var device = new Device(name)) // "/dev/serial0"
             {
+                var protocol = ProtocolBase.CreateV2(device);
                 var isMute = false;
                 byte[] fwdata = null;
                 string fwvers = null;
-                var packetFlashBeacon = new PacketFlashBeaconAck(false);
+                var packetFlashBeacon = protocol.CreatePacketFlashBeaconAck();
                 for (; ; )
                 {
                     if (!isMute)
@@ -452,7 +449,7 @@ namespace K5TOOL
                                 fwdata = null;
                             }
 
-                            device.Send(new PacketFlashWriteAck(packetWrite.ChunkNumber, packetWrite.SequenceId));
+                            device.Send(protocol.CreatePacketFlashWriteAck(packetWrite.ChunkNumber, packetWrite.SequenceId));
                         }
                         isMute = true;
                     }

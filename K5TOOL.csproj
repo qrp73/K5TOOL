@@ -38,12 +38,17 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Device.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="CommandHelper.cs" />
+    <Compile Include="FirmwareHelper.cs" />
+    <Compile Include="CommandLineParser.cs" />
     <Compile Include="Packets\Packet.cs" />
     <Compile Include="Packets\PacketHelloReq.cs" />
     <Compile Include="Packets\PacketHelloAck.cs" />
@@ -57,19 +62,28 @@
     <Compile Include="Packets\PacketReadAdcAck.cs" />
     <Compile Include="Packets\PacketRebootReq.cs" />
     <Compile Include="Packets\PacketFlashWriteReq.cs" />
-    <Compile Include="Logger.cs" />
-    <Compile Include="CommandHelper.cs" />
     <Compile Include="Packets\PacketFlashVersionReq.cs" />
     <Compile Include="Packets\PacketFlashWriteAck.cs" />
-    <Compile Include="FirmwareHelper.cs" />
-    <Compile Include="CommandLineParser.cs" />
     <Compile Include="Packets\PacketReadRssiReq.cs" />
     <Compile Include="Packets\PacketReadRssiAck.cs" />
     <Compile Include="Packets\PacketHelloTestReq.cs" />
     <Compile Include="Packets\FirmwareConstraints.cs" />
+    <Compile Include="Packets\ProtocolBase.cs" />
+    <Compile Include="Packets\V5\Packet5FlashVersionReq.cs" />
+    <Compile Include="Packets\V5\Packet5FlashWriteReq.cs" />
+    <Compile Include="Packets\V5\Packet5FlashBeaconAck.cs" />
+    <Compile Include="Packets\V5\ProtocolV5.cs" />
+    <Compile Include="Packets\V2\ProtocolV2.cs" />
+    <Compile Include="Packets\V2\Packet2FlashBeaconAck.cs" />
+    <Compile Include="Packets\V5\Packet5FlashWriteAck.cs" />
+    <Compile Include="Packets\V2\Packet2FlashVersionReq.cs" />
+    <Compile Include="Packets\V2\Packet2FlashWriteReq.cs" />
+    <Compile Include="Packets\V2\Packet2FlashWriteAck.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Packets\" />
+    <Folder Include="Packets\V5\" />
+    <Folder Include="Packets\V2\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Packets\ReadMe.txt" />

@@ -18,7 +18,8 @@
 */
 using System;
 using System.Linq;
-
+using K5TOOL.Packets.V2;
+using K5TOOL.Packets.V5;
 
 namespace K5TOOL.Packets
 {
@@ -84,12 +85,15 @@ namespace K5TOOL.Packets
             switch (id)
             {
                 // bootloader
-                case PacketFlashBeaconAck.ID: return new PacketFlashBeaconAck(data);
-                case PacketFlashVersionReq.ID: return new PacketFlashVersionReq(data);
-                case PacketFlashWriteAck.ID: return new PacketFlashWriteAck(data);
-                case PacketFlashWriteReq.ID: return new PacketFlashWriteReq(data);
+                case Packet2FlashBeaconAck.ID: return new Packet2FlashBeaconAck(data);
+                case Packet2FlashVersionReq.ID: return new Packet2FlashVersionReq(data);
+                case Packet2FlashWriteAck.ID: return new Packet2FlashWriteAck(data);
+                case Packet2FlashWriteReq.ID: return new Packet2FlashWriteReq(data);
                 // bootloader 5.00.01
-                case PacketFlashBeaconAck.ID2: return new PacketFlashBeaconAck(data);
+                case Packet5FlashBeaconAck.ID: return new Packet5FlashBeaconAck(data);
+                case Packet5FlashVersionReq.ID: return new Packet5FlashVersionReq(data);
+                case Packet5FlashWriteAck.ID: return new Packet5FlashWriteAck(data);
+                case Packet5FlashWriteReq.ID: return new Packet5FlashWriteReq(data);
 
                 // firmware
                 case PacketHelloAck.ID: return new PacketHelloAck(data);

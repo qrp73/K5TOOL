@@ -20,20 +20,26 @@ using System;
 using System.Linq;
 using System.Text;
 
-namespace K5TOOL.Packets
+namespace K5TOOL.Packets.V2
 {
-    public abstract class PacketFlashVersionReq : Packet
+    // old:   18050000 010202020e53504a3747ff018b00c000
+    // b2new: 18052000 010202061c53504a3747ff0f8c005300 322e30302e303600340a000000000020
+    public class Packet2FlashBeaconAck : PacketFlashBeaconAck
     {
-        public PacketFlashVersionReq(byte[] rawData)
-            : base(rawData)
+        public const ushort ID = 0x0518;
+
+        public Packet2FlashBeaconAck(byte[] rawData)
+            : base(rawData, true)
         {
+            if (base.HdrId != ID)
+                throw new InvalidOperationException();
         }
 
-        public PacketFlashVersionReq(byte[] rawData, bool suppressWarning)
-            : base(rawData, suppressWarning)
+        // bootloader 2.00.06: 18052000 010202061c53504a3747ff0f8c005300 322e30302e303600340a000000000020
+        // bootloader 5.00.01: 7a052000 010202061c53504a3747ff1093008900 352e30302e303100280c000000000020
+        public Packet2FlashBeaconAck()
+            : this(Utils.FromHex("18052000010202061c53504a3747ff0f8c005300322e30302e303600340a000000000020"))
         {
         }
-
-        public abstract string Version { get; }
     }
 }
