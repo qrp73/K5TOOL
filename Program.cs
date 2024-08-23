@@ -390,6 +390,7 @@ namespace K5TOOL
             using (var device = new Device(name)) // "/dev/serial0"
             {
                 var protocol = ProtocolBase.CreateV2(device);
+                //var protocol = ProtocolBase.CreateV5(device);
                 var isMute = false;
                 byte[] fwdata = null;
                 string fwvers = null;
@@ -416,6 +417,7 @@ namespace K5TOOL
                             Console.WriteLine("flash chunkNumber=0x{0:x4}, size=0x{1:x4}, chunkCount=0x{2:x4}", packetWrite.ChunkNumber, packetWrite.Size, packetWrite.ChunkCount);
                             if (fwdata == null)
                             {
+                                protocol.DecryptFlashInit();
                                 fwdata = new byte[packetWrite.ChunkCount*0x100];
                                 if (packetWrite.ChunkNumber != 0)
                                 {
@@ -430,14 +432,19 @@ namespace K5TOOL
                                 {
                                     var buf = new byte[expectedSize];
                                     Array.Copy(fwdata, buf, fwdata.Length);
+                                    fwdata = buf;
                                 }
                             }
                             //Array.Copy(packetWrite.Data, 0, fwdata, packetWrite.Offset, packetWrite.Size);
-                            Array.Copy(packetWrite.RawData, 16, fwdata, packetWrite.ChunkNumber*0x100, packetWrite.HdrSize - 12);
+                            var page = new byte[0x100];
+                            Array.Copy(packetWrite.RawData, 16, page, 0, Math.Min(page.Length, packetWrite.HdrSize - 12));
+                            page = protocol.DecryptFlashProcess(page);
+                            Array.Copy(page, 0, fwdata, packetWrite.ChunkNumber*0x100, packetWrite.HdrSize - 12);
 
                             // detect flashing complete event
                             if (packetWrite.ChunkNumber == packetWrite.ChunkCount-1)
                             {
+                                protocol.DecryptFlashInit();
                                 var shrink = 0x100 - packetWrite.Size;
                                 //var shrink = 0;
                                 var buf = new byte[fwdata.Length - shrink];

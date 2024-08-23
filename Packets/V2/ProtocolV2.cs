@@ -16,9 +16,9 @@ namespace K5TOOL.Packets.V2
                 new Packet2FlashVersionReq();
         }
 
-        public override PacketFlashWriteReq CreatePacketFlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] subData, uint seqId)
+        public override PacketFlashWriteReq CreatePacketFlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] data, int dataLength, uint seqId)
         {
-            return new Packet2FlashWriteReq(chunkNumber, chunkCount, subData, seqId);
+            return new Packet2FlashWriteReq(chunkNumber, chunkCount, data, dataLength, seqId);
         }
 
         public override PacketFlashBeaconAck CreatePacketFlashBeaconAck()

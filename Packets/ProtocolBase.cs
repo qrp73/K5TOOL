@@ -82,18 +82,20 @@ namespace K5TOOL.Packets
 
             var seqId = GenerateId();
 
-            WriteFlashInit();
+            EncryptFlashInit();
             try
             {
                 return ProcessAddressSpace(0x0000, data.Length, chunkSize, FirmwareConstraints.MinFlashAddr, FirmwareConstraints.MaxFlashAddr, MaxFlashBlock,
                     (absOffset, blockOffset, blockLength) =>
                     {
                         Console.Write("   Write {0:x4}...{1:x4}: ", absOffset, absOffset + blockLength);
-                        var subData = new byte[blockLength];
-                        Array.Copy(data, blockOffset, subData, 0, subData.Length);
-                        subData = WriteFlashEncrypt(subData);
+                        var subData = new byte[chunkSize];
+                        for (var i = 0; i < subData.Length; i++)
+                            subData[i] = 0xff;
+                        Array.Copy(data, blockOffset, subData, 0, blockLength);
+                        subData = EncryptFlashProcess(subData);
                         var chunkNumber = (ushort)(absOffset / chunkSize);
-                        _device.Send(CreatePacketFlashWriteReq(chunkNumber, chunkCount, subData, seqId));
+                        _device.Send(CreatePacketFlashWriteReq(chunkNumber, chunkCount, subData, blockLength, seqId));
                         for (var counter = 0; ; counter++)
                         {
                             packet = _device.Recv();
@@ -129,25 +131,38 @@ namespace K5TOOL.Packets
             }
             finally
             {
-                WriteFlashFinish();
+                EncryptFlashFinish();
             }
         }
 
-        public abstract PacketFlashWriteReq CreatePacketFlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] subData, uint seqId);
+        public abstract PacketFlashWriteReq CreatePacketFlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] data, int dataLength, uint seqId);
 
         public abstract PacketFlashVersionReq CreatePacketFlashVersionReq(string version);
 
         public abstract PacketFlashBeaconAck CreatePacketFlashBeaconAck();
 
-        public virtual void WriteFlashInit()
+        public virtual void EncryptFlashInit()
         {
         }
 
-        public virtual void WriteFlashFinish()
+        public virtual void EncryptFlashFinish()
         {
         }
 
-        public virtual byte[] WriteFlashEncrypt(byte[] data)
+        public virtual byte[] EncryptFlashProcess(byte[] data)
+        {
+            return data;
+        }
+
+        public virtual void DecryptFlashInit()
+        {
+        }
+
+        public virtual void DecryptFlashFinish()
+        {
+        }
+
+        public virtual byte[] DecryptFlashProcess(byte[] data)
         {
             return data;
         }

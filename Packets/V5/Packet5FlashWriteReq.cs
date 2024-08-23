@@ -35,13 +35,13 @@ namespace K5TOOL.Packets.V5
                 throw new InvalidOperationException();
         }
 
-        public Packet5FlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] data)
-            : this(chunkNumber, chunkCount, data, 0x1d9f8d8a)
+        public Packet5FlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] data, int dataLength)
+            : this(chunkNumber, chunkCount, data, dataLength, 0x1d9f8d8a)
         {
         }
 
-        public Packet5FlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] data, uint id/*=0x1d9f8d8a*/)
-            : base(MakePacketBuffer(id, chunkNumber, chunkCount, data, 0x0000))
+        public Packet5FlashWriteReq(ushort chunkNumber, ushort chunkCount, byte[] data, int dataLength, uint id/*=0x1d9f8d8a*/)
+            : base(MakePacketBuffer(id, chunkNumber, chunkCount, data, dataLength, 0x0000))
         {
             if (chunkNumber > chunkCount)
                 throw new ArgumentOutOfRangeException("chunkNumber");
@@ -52,13 +52,15 @@ namespace K5TOOL.Packets.V5
                         chunkCount));
         }
 
-        private static byte[] MakePacketBuffer(uint id, ushort chunkNumber, ushort chunkCount, byte[] data, ushort padding)
+        private static byte[] MakePacketBuffer(uint id, ushort chunkNumber, ushort chunkCount, byte[] data, int dataLength, ushort padding)
         {
-            if (data.Length > 0x100)
+            if (data.Length != 0x100)
+                throw new ArgumentOutOfRangeException("data");
+            if (dataLength > 0x100)
                 throw new ArgumentOutOfRangeException("data");
             if ((chunkCount & 0xff00) != 0)
                 throw new ArgumentOutOfRangeException("chunkCount>0x100 is not tested yet");
-            var length = data.Length;
+            var length = dataLength;
             var buf = new byte[16 + 0x100];
             var hdrSize = buf.Length - 4;
             if (hdrSize != 0x010c)
