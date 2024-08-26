@@ -71,32 +71,32 @@ namespace K5TOOL.Packets.V5
             Utils.FromHex("8172ea14916b606855ff2aabe52e993c"),  // iv  15
         };
 
+        private static void GetKey(int keyNumber, out byte[] key, out byte[] iv)
+        {
+            if (keyNumber < 0 || keyNumber >= 0x10)
+                throw new ArgumentOutOfRangeException("keyNumber");
+            key = _keys[keyNumber * 2 + 0];
+            iv = _keys[keyNumber * 2 + 1];
+            key = ReverseBytesU32(key);
+            iv = ReverseBytesU32(iv);
+        }
+
         private ICryptoTransform _aesEncoder;
 
         public override void EncryptFlashInit()
         {
-            // WARNING: do not remove exception, with no proper key it can brick your radio
-            throw new NotImplementedException("AES encrypted flash upload is not tested yet");
-            var key = _keys[_keyNumber * 2 + 0];
-            var iv = _keys[_keyNumber * 2 + 1];
+            byte[] key;
+            byte[] iv;
+            GetKey(_keyNumber, out key, out iv);
             using (var aes = Aes.Create())
             {
-                aes.Key = ReverseBytesU32(key);
-                aes.IV = ReverseBytesU32(iv);
+                aes.Key = key;
+                aes.IV = iv;
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.None;
                 aes.BlockSize = 128;
                 _aesEncoder = aes.CreateEncryptor(key, iv);
             }
-        }
-
-        private static byte[] ReverseBytesU32(byte[] data)
-        {
-            return Enumerable.Range(0, data.Length / 4)
-                .Select(arg => BitConverter.ToUInt32(data, arg * 4))
-                .Select(arg => BitConverter.ToUInt32(BitConverter.GetBytes(arg).Reverse().ToArray(), 0))
-                .SelectMany(arg => BitConverter.GetBytes(arg))
-                .ToArray();
         }
 
         public override void EncryptFlashFinish()
@@ -108,23 +108,22 @@ namespace K5TOOL.Packets.V5
             }
         }
 
-        public override byte[] EncryptFlashProcess(byte[] data)
+        public override void EncryptFlashProcess(byte[] src, int srcIndex, byte[] dst, int dstIndex, int length)
         {
-            var encoded = new byte[data.Length];
-            _aesEncoder.TransformBlock(data, 0, data.Length, encoded, 0);
-            return encoded;
+            _aesEncoder.TransformBlock(src, srcIndex, length, dst, dstIndex);
         }
 
         private ICryptoTransform _aesDecoder;
 
         public override void DecryptFlashInit()
         {
-            var key = _keys[_keyNumber * 2 + 0];
-            var iv = _keys[_keyNumber * 2 + 1];
+            byte[] key;
+            byte[] iv;
+            GetKey(_keyNumber, out key, out iv);
             using (var aes = Aes.Create())
             {
-                aes.Key = ReverseBytesU32(key);
-                aes.IV = ReverseBytesU32(iv);
+                aes.Key = key;
+                aes.IV = iv;
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.None;
                 aes.BlockSize = 128;
@@ -141,11 +140,18 @@ namespace K5TOOL.Packets.V5
             }
         }
 
-        public override byte[] DecryptFlashProcess(byte[] data)
+        public override void DecryptFlashProcess(byte[] src, int srcIndex, byte[] dst, int dstIndex, int length)
         {
-            var encoded = new byte[data.Length];
-            _aesDecoder.TransformBlock(data, 0, data.Length, encoded, 0);
-            return encoded;
+            _aesDecoder.TransformBlock(src, srcIndex, length, dst, dstIndex);
+        }
+
+        private static byte[] ReverseBytesU32(byte[] data)
+        {
+            return Enumerable.Range(0, data.Length / 4)
+                .Select(arg => BitConverter.ToUInt32(data, arg * 4))
+                .Select(arg => BitConverter.ToUInt32(BitConverter.GetBytes(arg).Reverse().ToArray(), 0))
+                .SelectMany(arg => BitConverter.GetBytes(arg))
+                .ToArray();
         }
     }
 }

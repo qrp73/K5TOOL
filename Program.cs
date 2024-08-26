@@ -389,8 +389,8 @@ namespace K5TOOL
             Envelope.IsRadioEndpoint = true;
             using (var device = new Device(name)) // "/dev/serial0"
             {
-                var protocol = ProtocolBase.CreateV2(device);
-                //var protocol = ProtocolBase.CreateV5(device);
+                //var protocol = ProtocolBase.CreateV2(device);
+                var protocol = ProtocolBase.CreateV5(device);
                 var isMute = false;
                 byte[] fwdata = null;
                 string fwvers = null;
@@ -435,16 +435,17 @@ namespace K5TOOL
                                     fwdata = buf;
                                 }
                             }
+                            device.Send(protocol.CreatePacketFlashWriteAck(packetWrite.ChunkNumber, packetWrite.SequenceId));
+
                             //Array.Copy(packetWrite.Data, 0, fwdata, packetWrite.Offset, packetWrite.Size);
-                            var page = new byte[0x100];
+                            var page = new byte[0x100]; 
                             Array.Copy(packetWrite.RawData, 16, page, 0, Math.Min(page.Length, packetWrite.HdrSize - 12));
-                            page = protocol.DecryptFlashProcess(page);
-                            Array.Copy(page, 0, fwdata, packetWrite.ChunkNumber*0x100, packetWrite.HdrSize - 12);
+                            protocol.DecryptFlashProcess(page, 0, fwdata, packetWrite.ChunkNumber * 0x100, packetWrite.HdrSize - 12);
 
                             // detect flashing complete event
                             if (packetWrite.ChunkNumber == packetWrite.ChunkCount-1)
                             {
-                                protocol.DecryptFlashInit();
+                                protocol.DecryptFlashFinish();
                                 var shrink = 0x100 - packetWrite.Size;
                                 //var shrink = 0;
                                 var buf = new byte[fwdata.Length - shrink];
@@ -454,9 +455,8 @@ namespace K5TOOL
                                 Console.WriteLine("Write {0}", fileName);
                                 File.WriteAllBytes(fileName, fwdata);
                                 fwdata = null;
+                                return 0;
                             }
-
-                            device.Send(protocol.CreatePacketFlashWriteAck(packetWrite.ChunkNumber, packetWrite.SequenceId));
                         }
                         isMute = true;
                     }

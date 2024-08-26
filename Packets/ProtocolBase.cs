@@ -93,9 +93,10 @@ namespace K5TOOL.Packets
                         for (var i = 0; i < subData.Length; i++)
                             subData[i] = 0xff;
                         Array.Copy(data, blockOffset, subData, 0, blockLength);
-                        subData = EncryptFlashProcess(subData);
+                        var cipher = new byte[subData.Length];
+                        EncryptFlashProcess(subData, 0, cipher, 0, cipher.Length);
                         var chunkNumber = (ushort)(absOffset / chunkSize);
-                        _device.Send(CreatePacketFlashWriteReq(chunkNumber, chunkCount, subData, blockLength, seqId));
+                        _device.Send(CreatePacketFlashWriteReq(chunkNumber, chunkCount, cipher, blockLength, seqId));
                         for (var counter = 0; ; counter++)
                         {
                             packet = _device.Recv();
@@ -149,9 +150,9 @@ namespace K5TOOL.Packets
         {
         }
 
-        public virtual byte[] EncryptFlashProcess(byte[] data)
+        public virtual void EncryptFlashProcess(byte[] src, int srcIndex, byte[] dst, int dstIndex, int length)
         {
-            return data;
+            Array.Copy(src, srcIndex, dst, dstIndex, length);
         }
 
         public virtual void DecryptFlashInit()
@@ -162,9 +163,9 @@ namespace K5TOOL.Packets
         {
         }
 
-        public virtual byte[] DecryptFlashProcess(byte[] data)
+        public virtual void DecryptFlashProcess(byte[] src, int srcIndex, byte[] dst, int dstIndex, int length)
         {
-            return data;
+            Array.Copy(src, srcIndex, dst, dstIndex, length);
         }
 
         #endregion Bootloader
