@@ -1,58 +1,72 @@
 # K5TOOL
-UV-K5 toolkit utility to read/write EEPROM and flashing firmware
+UV-K5/UV-R5 Toolkit Utility for Reading/Writing EEPROM and Flashing Firmware
 
-I created this tool to get more robust protocol with logging to work with UV-K5 radio.
+I created this tool to provide a more robust protocol with logging capabilities for working with the UV-K5 radio.
 
-This tool allows to read/write EEPROM and write flash images.
-It also include pack/unpack commands and support both formats (encrypted/plain) of firmware images.
+This utility allows you to read and write EEPROM, as well as flash firmware images. It includes commands for packing and unpacking firmware images and supports both encrypted and plain formats.
 
-The tool supports firmware size up to 0xf000 (61440) bytes and tested on large firmwares.
+The tool supports firmware sizes up to 0xF000 (61,440) bytes and has been tested with large firmware files.
 
-Also the tool can be used as software simulator of UV-K5 bootloader for testing firmware updater software.
+Additionally, the tool can be used as a software simulator for the UV-K5 bootloader, which is useful for testing firmware updater software.
 
+
+## Installation
+
+1. **Download and Unzip:**
+   - Download the ZIP file from the following link: [K5TOOL Releases](https://github.com/qrp73/K5TOOL/releases).
+   - Unzip the downloaded file.
+
+2. **Run on Linux/MacOS**
+   - On Linux or MacOS, you may need to set execute permissions for the `k5tool` script:
+```bash
+sudo chmod +x k5tool
+```
+
+3. **Run on Windows:**
+   - On Windows, you can run the tool from the console as `K5TOOL.exe`.
 
 ## Install
 
 Just download zip file and unzip it: https://github.com/qrp73/K5TOOL/releases
 
 On Linux/MacOS it may need to set execute permission for k5tool script:
-```sudo chmod +x k5tool```
+```
+sudo chmod +x k5tool
+```
 
 On Windows you can run it from console as usual K5TOOL.exe.
 
 
 ## Dependencies
 
-The tool requires mono runtime. On Windows it is available out of the box.
+The tool requires the Mono runtime. 
+On Windows, Mono is available just out of the box.
 
-On Linux you can install it with:
+On Linux, you can install Mono runtime package with the following command:
 ```
 sudo apt install mono-runtime
 ```
 
 ## Compile
 
-You can compile source code with MonoDevelop (which I'm using) or Visual Studio.
+You can compile the source code using MonoDevelop (which I use) or Visual Studio.
 
-On Windows you can run it from command line as usual executable K5TOOL.exe.
+On Windows, run the compiled tool from the command line as `K5TOOL.exe`.
 
-On Linux/MacOS add execute permission for bash launcher script with ```chmod +x k5tool```
+On Linux/MacOS, run the compiled tool using the provided bash launcher script `k5tool`.
 
 
 ## Logging
 
-The tool writes detailed communication log with all error details. You can read log file in K5TOOL.log.
+The tool generates a detailed communication log that includes all error details. You can view the log in the `K5TOOL.log` file.
 
-```rx``` and ```tx``` tags shows raw communication with radio.
+- Lines starting with the `rx` and `tx` tags represent raw communication data exchanged with the radio.
+- Lines starting with the `RX` and `TX` tags contain decrypted messages.
+- Lines starting with the `recv` and `send` tags show parsed protocol messages.
 
-```RX``` and ```TX``` tags shows decrypted messages.
+If an error occurs, you can find all communication details and error information in the log.
 
-```recv``` and ```send``` tags shows parsed protocol messages
-
-In case of any error you can find all communication and detailed error info in the log.
-
-When the tool is started it copy log backup to K5TOOL.log.bak and starts the new K5TOOL.log file.
-Old K5TOOL.log.bak is removed. So be careful if some error happens, take a copy of K5TOOL.log for analysis before trying to run the tool again.
+When the tool starts, it creates a backup of the previous log as `K5TOOL.log.bak` and begins writing a new `K5TOOL.log` file. The old `K5TOOL.log.bak` file is deleted. If an error occurs, make sure to copy the `K5TOOL.log` file for analysis before running the tool again to avoid losing important information.
 
 
 ## Check connection
@@ -67,27 +81,30 @@ Handshake...
 Done
 ```
 
-## Specify serial port name
+## Specify Serial Port Name
 
-By default the tool using the last serial port from available list. But if you want to specify other port, you can do it by adding ```-port <portName>``` argument:
+By default, the tool uses the last serial port from the available list. However, if you want to specify a different port, you can do so by adding the `-port <portName>` argument:
 
 For Linux/MacOS:
 ```
 ./k5tool -port /dev/ttyUSB1 -hello
 ```
-for Windows:
+For Windows:
 ```
 ./k5tool -port COM3 -hello
 ```
 
-You can use empty -port option to get all available serial ports on the system:
+You can use the `-port` option without specifying a port name to list all available serial ports on the system:
 ```
 $ ./k5tool -port
 /dev/ttyS0
 /dev/ttyUSB0
 ```
 
-## Reboot the radio and show bootloader version
+**Note:** Some ports may not appear in this list. For example, the built-in serial port on a Raspberry Pi might show up as `/dev/ttyS0` but may require using the name `/dev/ttyAMA0`, which might not be listed. This is specific to the operating system.
+
+
+## Reboot the Radio and Display the Bootloader Version
 
 ```
 $ ./k5tool -reboot
@@ -116,8 +133,31 @@ Read ADC...
 Done
 ```
 
-## Read full EEPROM of UV-K5 radio
+**Note:** The value displayed is not in Volts but is a raw reading from the ADC.
 
+
+
+## Read EEPROM data from UV-K5 radio
+
+```$ ./k5tool -rdee [<offset> <size>] [<fileName>]```
+
+You can specify optional parameters for the starting address (offset) and the length (size) of the read block. The file name is also optional. 
+
+By default, the parameters have the following values:
+- `<offset>` = 0x0000
+- `<size>` = 0x2000
+- `<fileName>` = 'eeprom-{hex-offset}-{hex-size}.raw'
+
+**Note:** Reading the EEPROM should be done when the radio is operating in normal mode (not to be confused with flashing mode). 
+Before running read/write EEPROM command:
+1. Disconnect the cable.
+2. Turn off the radio.
+3. Turn the radio back (DO NOT HOLD the Push-to-Talk button!). 
+4. Reconnect the cable and then execute the command.
+
+This ensures that the radio is in the correct mode for reading/writing EEPROM data.
+
+### Read Full EEPROM Dump
 ```
 $ ./k5tool -rdee
 Opening /dev/ttyUSB0
@@ -134,17 +174,18 @@ Read EEPROM offset=0x0000, size=0x2000 to eeprom-0000-2000.raw
    Read 1f80...2000: OK
 Done
 ```
-it will create backup image ```eeprom-0000-2000.raw```
 
-You can specify filename:
+It will create a full backup image file named `eeprom-0000-2000.raw`.
+
+You can specify a different filename with the `-rdee` option:
 ```
 $ ./k5tool -rdee eeprom-full.raw
 ```
 
-## Read calibration backup of UV-K5
+### Read UV-K5 Calibration Backup dump
 
 ```
-$ ./k5tool -rdee 0x1E00 0x0200 eeprom-calib.raw
+$ ./k5tool -rdee 0x1e00 0x0200 eeprom-calib.raw
 Opening /dev/ttyUSB0
 Handshake...
    Firmware:         "2.01.32"
@@ -157,20 +198,28 @@ Read EEPROM offset=0x1e00, size=0x0200 to eeprom-calib.raw
    Read 1f80...2000: OK
 Done
 ```
-where:
-0x1E00 is starting offset to read from EEPROM
-0x0200 block size to read from EEPROM
 
-## Write full EEPROM from backup file
+In this example, `0x1e00` is the starting address, `0x200` is the size of the data block to read, and `eeprom-calib-1e00-0200.raw` is the file where the calibration data will be saved.
 
+
+## Write EEPROM from File
+
+```$ ./k5tool -wree [<offset>] <fileName>```
+
+You can specify optional parameter for the starting address (offset).
+
+By default, the parameter have the following value:
+- `<offset>` = 0x0000
+
+### Write Full EEPROM Backup Dump to UV-K5 from a File
 ```
-$ ./k5tool -wree eeprom-full.raw
+$ ./k5tool -wree eeprom-0000-2000.raw
 Opening /dev/ttyUSB0
 Handshake...
    Firmware:         "2.01.32"
    HasCustomAesKey:  0
    IsPasswordLocked: 0
-Write EEPROM offset=0x0000, size=0x2000 from eeprom-full.raw
+Write EEPROM offset=0x0000, size=0x2000 from eeprom-0000-2000.raw
    Write 0000...0080: OK
    Write 0080...0100: OK
    Write 0100...0180: OK
@@ -184,9 +233,22 @@ Write EEPROM offset=0x0000, size=0x2000 from eeprom-full.raw
 Done
 ```
 
-## Flash firmware image to radio
+## Flash Firmware Image to the Radio
 
-Note: this command should be executed in flashing mode. You can switch to flashing mode by disconnect cable, turn off radio and then turn on with pressed PTT button. The led should light. Then connect the cable and execute command.
+```-wrflash <fileName>```
+
+This command flashes the firmware image in the standard format (encrypted and with a checksum). 
+It checks the checksum, if the checksum is incorrect, the firmware will not be flashed. 
+It is recommended to use this command and the standard format for flashing to avoid potential errors in the firmware image file.
+
+**Note:** This command should be executed in flashing mode. To switch to flashing mode, follow these steps:
+
+1. Disconnect the cable.
+2. Turn off the radio.
+3. Turn the radio back on while holding down the PTT (Push-to-Talk) button. The LED should light up.
+4. Reconnect the cable and then execute the command.
+
+This ensures that the radio is in the correct mode for flashing the firmware image.
 
 ```
 $ ./k5tool -wrflash RT590_v2.01.32_publish.bin
@@ -210,14 +272,40 @@ Send version "2.01.32"...
 Done
 ```
 
-## Flash raw firmware image (decrypted) to radio
+If the bootloader returns an error when writing the first block, it means that the bootloader is refusing to accept the firmware with the specified version.
 
-Note: this command should be executed in flashing mode.
 
-Warning: this command don't check firmware image content. Make sure you're using proper unpacked (decrypted) image.
+## Flash Raw (Decrypted) Firmware Image to the Radio
+
+```-wrflashraw [<version>] <fileName>```
+
+This command is used to write the firmware in raw format (as is), meaning you can use the binary file resulting from compilation. This format does not include a checksum, so it cannot be verified. Make sure you are using the correct unencrypted firmware file before writing it.
+
+You can specify an optional `<version>` parameter to provide the version string required by the bootloader to unlock flash mode.
+
+By default, the parameter value depends on the radio bootloader version:
+
+- For bootloader v2: `<version>` = "2.01.23"
+- For bootloader v5: `<version>` = "5.00.05"
+
+You can use the `*` symbol as version string to bypass the bootloader's version check.
+
+This command flashes the firmware image in the standard format (encrypted and with a checksum). 
+It checks the checksum, if the checksum is incorrect, the firmware will not be flashed. 
+It is recommended to use this command and the standard format for flashing to avoid potential errors in the firmware image file.
+
+
+**Note:** This command should be executed in flashing mode. To switch to flashing mode, follow these steps:
+
+1. Disconnect the cable.
+2. Turn off the radio.
+3. Turn the radio back on while holding down the PTT (Push-to-Talk) button. The LED should light up.
+4. Reconnect the cable and then execute the command.
+
+This ensures that the radio is in the correct mode for flashing the firmware image.
 
 ```
-$ ./k5tool -wrflashraw *.01.32 RT590-2.01.32.raw
+$ ./k5tool -wrflashraw \*.01.32 RT590-2.01.32.raw
 ```
 where 
 *.01.32 is version sent to the radio to unlock flashing.
@@ -230,6 +318,10 @@ in this case it will use default version "2.01.23" to unlock flashing mode.
 
 
 ## Unpack firmware image
+
+```$ ./k5tool -unpack <fileName> [<outputName>]```
+
+This command converts the firmware from the standard format (encrypted and versioned, with check sum) to the raw format, which is the format used for writing the firmware to the microcontroller's memory.
 
 ```
 $ ./k5tool -unpack RT590_v2.01.32_publish.bin
@@ -249,7 +341,11 @@ Write RT590.raw...
 Done
 ```
 
-## Pack firmware image
+## Pack Firmware Image
+
+```$ ./k5tool -pack <version> <fileName> [<outputName>]```
+
+This command packs a raw firmware image (the compilation result, i.e., data in the format used for writing to the microcontroller's memory) into the packed format used for UV-K5 firmware. The packed format is encrypted and includes a checksum for verification and a version string for the bootloader.
 
 ```
 $ ./k5tool -pack 2.01.32 RT590.raw
@@ -270,11 +366,10 @@ Done
 
 ## UV-K5 bootloader simulator
 
-```
-$ ./k5tool -port /dev/ttyUSB1 -simula
-```
+```$ ./k5tool -port /dev/ttyUSB1 -simula```
 
-Simulate device bootloader, can be used for testing and analyze firmware updaters.
+This command is used to simulate the bootloader. It can be useful for testing other firmware update software or for dumping the firmware from the original flasher without connecting to a real radio.
+
 Where ```/dev/ttyUSB1``` is a name of serial port which is used for UV-K5 device simulation.
 
 
