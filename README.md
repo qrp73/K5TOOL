@@ -187,7 +187,7 @@ Read EEPROM offset=0x1e00, size=0x0200 to eeprom-calib.raw
 Done
 ```
 
-In this example, `0x1e00` is the starting address, `0x200` is the size of the data block to read, and `eeprom-calib-1e00-0200.raw` is the file where the calibration data will be saved.
+In this example, `0x1e00` is the starting address, `0x200` is the size of the data block to read, and `eeprom-calib.raw` is the file where the calibration data will be saved.
 
 
 ## Write EEPROM from File
