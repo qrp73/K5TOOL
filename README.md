@@ -140,7 +140,7 @@ By default, the parameters have the following values:
 Before running read/write EEPROM command:
 1. Disconnect the cable.
 2. Turn off the radio.
-3. Turn the radio back (DO NOT HOLD the Push-to-Talk button!). 
+3. Turn the radio back on (DO NOT HOLD the Push-to-Talk button!). 
 4. Reconnect the cable and then execute the command.
 
 This ensures that the radio is in the correct mode for reading/writing EEPROM data.
