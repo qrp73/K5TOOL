@@ -9,6 +9,8 @@ The tool supports firmware sizes up to 0xF000 (61,440) bytes and has been tested
 
 Additionally, the tool can be used as a software simulator for the UV-K5 bootloader, which is useful for testing firmware updater software.
 
+The tool supports different bootloader versions, including bootloader v5.00.01, it uses AES encryption internally, so you don't need to care about it.
+
 
 ## Prerequisites and Dependencies
 
