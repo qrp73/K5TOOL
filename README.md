@@ -278,11 +278,6 @@ By default, the parameter value depends on the radio bootloader version:
 
 You can use the `*` symbol as version string to bypass the bootloader's version check.
 
-This command flashes the firmware image in the standard format (encrypted and with a checksum). 
-It checks the checksum, if the checksum is incorrect, the firmware will not be flashed. 
-It is recommended to use this command and the standard format for flashing to avoid potential errors in the firmware image file.
-
-
 **Note:** This command should be executed in flashing mode. To switch to flashing mode, follow these steps:
 
 1. Disconnect the cable.
