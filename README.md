@@ -1,5 +1,5 @@
 # K5TOOL
-UV-K5/UV-R5 Toolkit Utility for Reading/Writing EEPROM and Flashing Firmware
+UV-K5/UV-5R Toolkit Utility for Reading/Writing EEPROM and Flashing Firmware
 
 I created this tool to provide a more robust protocol with logging capabilities for working with the UV-K5 radio.
 
