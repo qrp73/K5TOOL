@@ -10,6 +10,16 @@ The tool supports firmware sizes up to 0xF000 (61,440) bytes and has been tested
 Additionally, the tool can be used as a software simulator for the UV-K5 bootloader, which is useful for testing firmware updater software.
 
 
+## Prerequisites and Dependencies
+
+The tool requires the Mono runtime. 
+On Windows, Mono is available just out of the box.
+
+On Linux, you can install Mono runtime package with the following command:
+```
+sudo apt install mono-runtime
+```
+
 ## Installation
 
 1. **Download and Unzip:**
@@ -24,28 +34,6 @@ sudo chmod +x k5tool
 
 3. **Run on Windows:**
    - On Windows, you can run the tool from the console as `K5TOOL.exe`.
-
-## Install
-
-Just download zip file and unzip it: https://github.com/qrp73/K5TOOL/releases
-
-On Linux/MacOS it may need to set execute permission for k5tool script:
-```
-sudo chmod +x k5tool
-```
-
-On Windows you can run it from console as usual K5TOOL.exe.
-
-
-## Dependencies
-
-The tool requires the Mono runtime. 
-On Windows, Mono is available just out of the box.
-
-On Linux, you can install Mono runtime package with the following command:
-```
-sudo apt install mono-runtime
-```
 
 ## Compile
 
