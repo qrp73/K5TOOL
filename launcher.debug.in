@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+mono --debug "@LAUNCHER_EXE@" "$@"

@@ -46,9 +46,31 @@ On Windows, run the compiled tool from the command line as `K5TOOL.exe`.
 On Linux/MacOS, run the compiled tool using the provided bash launcher script `k5tool`.
 
 
+## Build and Install on Linux/macOS
+
+```
+$ sudo apt install mono-runtime mono-mcs
+$ git clone https://github.com/qrp73/K5TOOL.git
+$ cd K5TOOL
+$ mkdir build && cd build
+$ cmake ..
+$ make
+$ sudo make install
+```
+
+Testing:
+```
+$ k5tool -port /dev/ttyUSB0 -hello
+```
+
+## Uninstall on Linux/macOS
+
+Just remove ```/usr/local/lib/k5tool``` folder and ```/usr/local/bin/k5tool``` file. Thats it.
+
+
 ## Logging
 
-The tool generates a detailed communication log that includes all error details. You can view the log in the `K5TOOL.log` file.
+The tool generates a detailed communication log that includes all error details. You can view the log in the `K5TOOL.log` file (current folder).
 
 - Lines starting with the `rx` and `tx` tags represent raw communication data exchanged with the radio.
 - Lines starting with the `RX` and `TX` tags contain decrypted messages.
