@@ -21,6 +21,15 @@ https://www.youtube.com/watch?v=uNhbnLOpZOA
 
 Old V1 use processor DP32G030. And usual custom firmware are developed for this processor.
 
+**Recovery for V1 (processor DP32G030, bootloader 2):**
+
+[RT590_v2.01.32_publish.zip](https://github.com/user-attachments/files/24219076/RT590_v2.01.32_publish.zip)
+
+**Recovery for V1 (processor DP32G030, bootloader 5):**
+
+[ORIGINAL_v5.00.05.bin.zip](https://github.com/user-attachments/files/24219092/ORIGINAL_v5.00.05.bin.zip)
+
+
 Below are the recovery firmware images for the newer models:
 
 **Recovery for V2 (PCB version V1.8, processor PY32F030):**
