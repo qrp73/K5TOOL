@@ -23,23 +23,13 @@ Old V1 use processor DP32G030. And usual custom firmware are developed for this 
 
 Below are the recovery firmware images for different radio models:
 
-**Recovery for V1 (processor DP32G030, bootloader 2):**
+**Recovery for V1 (processor DP32G030, bootloader 2, use -wrflash):** [RT590_v2.01.32_publish.zip](https://github.com/user-attachments/files/24219076/RT590_v2.01.32_publish.zip)
 
-[RT590_v2.01.32_publish.zip](https://github.com/user-attachments/files/24219076/RT590_v2.01.32_publish.zip)
+**Recovery for V1 (processor DP32G030, bootloader 5, use -wrflash):** [ORIGINAL_v5.00.05.bin.zip](https://github.com/user-attachments/files/24219092/ORIGINAL_v5.00.05.bin.zip)
 
-**Recovery for V1 (processor DP32G030, bootloader 5):**
+**Recovery for V2 (PCB version V1.8, processor PY32F030, use -wrflash):** [k5_py030_v1.01.07.zip](https://github.com/user-attachments/files/24218399/k5_py030_v1.01.07.zip), [k5_py030_v1.02.01.zip](https://github.com/user-attachments/files/24218396/k5_py030_v1.02.01.zip)
 
-[ORIGINAL_v5.00.05.bin.zip](https://github.com/user-attachments/files/24219092/ORIGINAL_v5.00.05.bin.zip)
-
-**Recovery for V2 (PCB version V1.8, processor PY32F030):**
-
-[k5_py030_v1.01.07.zip](https://github.com/user-attachments/files/24218399/k5_py030_v1.01.07.zip)
-
-[k5_py030_v1.02.01.zip](https://github.com/user-attachments/files/24218396/k5_py030_v1.02.01.zip)
-
-**Recovery for V3 (processor PY32F071):**
-
-[K5_V3_PY32F071_firmware.zip](https://github.com/user-attachments/files/24218416/K5_V3_PY32F071_firmware.zip)
+**Recovery for V3 (processor PY32F071, use -wrflashraw):** [K5_V3_PY32F071_firmware.zip](https://github.com/user-attachments/files/24218416/K5_V3_PY32F071_firmware.zip)
 
 
 ## Prerequisites and Dependencies
