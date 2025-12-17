@@ -11,6 +11,8 @@ Additionally, the tool can be used as a software simulator for the UV-K5 bootloa
 
 The tool supports different bootloader versions, including bootloader v5.00.01, it uses AES encryption internally, so you don't need to care about it.
 
+AVERS recorded a clear and beginner-friendly demo video on how to use it:
+https://www.youtube.com/watch?v=uNhbnLOpZOA
 
 ## Prerequisites and Dependencies
 
