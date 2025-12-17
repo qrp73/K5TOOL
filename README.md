@@ -11,8 +11,26 @@ Additionally, the tool can be used as a software simulator for the UV-K5 bootloa
 
 The tool supports different bootloader versions, including bootloader v5.00.01, it uses AES encryption internally, so you don't need to care about it.
 
+## Notes
 AVERS recorded a clear and beginner-friendly demo video on how to use it:
 https://www.youtube.com/watch?v=uNhbnLOpZOA
+
+**Note** that newer radio models may use a different processor and therefore require their own specific firmware. These newer revisions can be identified by the V2 marking under the battery compartment, a V3 revision also exists. If you have one of these newer models and flashed firmware intended for an older revision, the device will not boot. 
+
+[![Image](https://github.com/user-attachments/assets/133a9232-0bfc-4044-abc2-a9ec4a44ceaa)](https://github.com/user-attachments/assets/654face1-c150-4340-877c-db2670b02f78)
+
+Old V1 use processor DP32G030. And usual custom firmware are developed for this processor.
+
+Below are the recovery firmware images for the newer models:
+
+**Recovery for V2 (PCB version V1.8, processor PY32F030):**
+[k5_py030_v1.01.07.zip](https://github.com/user-attachments/files/24218399/k5_py030_v1.01.07.zip)
+
+[k5_py030_v1.02.01.zip](https://github.com/user-attachments/files/24218396/k5_py030_v1.02.01.zip)
+
+**Recovery for V3 (processor PY32F071):**
+[K5_V3_PY32F071_firmware.zip](https://github.com/user-attachments/files/24218416/K5_V3_PY32F071_firmware.zip)
+
 
 ## Prerequisites and Dependencies
 
